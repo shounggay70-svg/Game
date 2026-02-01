@@ -1,0 +1,207 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Activity List</title>
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        margin: 0;
+        background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+        text-align: center;
+        padding: 100px 0;
+        color: white;
+        min-height: 100vh;
+    }
+
+    h1 {
+        margin-bottom: 40px;
+        text-shadow: 0 0 20px #00fff2, 0 0 30px #ff00d4;
+        animation: glow 2s infinite alternate;
+    }
+
+    @keyframes glow {
+        0% { text-shadow: 0 0 5px #00fff2; }
+        100% { text-shadow: 0 0 20px #ff00d4; }
+    }
+
+    .scroll-container {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 20px;
+        padding: 20px;
+        max-width: 1000px;
+        margin: 0 auto;
+    }
+
+    /* Activity boxes (ပုံထဲကအတိုင်း) */
+    .activity {
+        background-color: #BC13FE; /* ခရမ်းရောင် */
+        color: white;
+        padding: 20px;
+        width: 250px;
+        border-radius: 40px; /* ပိုဝိုင်းအောင် */
+        font-weight: bold;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 15px;
+        transition: 0.3s;
+    }
+
+    .activity:hover {
+        background-color: #9b10d3;
+        transform: scale(1.05);
+    }
+
+    .activity img {
+        width: 40px;
+        height: 40px;
+        object-fit: contain;
+    }
+
+    /* More Game Button (ပုံထဲက BACK TO HOME ပုံစံအတိုင်း) */
+    .more-game-btn {
+        margin-top: 50px;
+        background: linear-gradient(to right, #ff00d4, #ff4e50); /* Gradient အရောင် */
+        color: white;
+        border: none;
+        padding: 15px 60px;
+        font-size: 20px;
+        font-weight: bold;
+        border-radius: 50px;
+        cursor: pointer;
+        box-shadow: 0 5px 15px rgba(255, 0, 212, 0.4);
+        transition: 0.3s;
+        text-transform: uppercase;
+    }
+
+    .more-game-btn:hover {
+        transform: scale(1.1);
+        box-shadow: 0 0 20px #ff00d4;
+    }
+
+    /* Hamburger & Sidebar */
+    .hamburger-menu {
+        border: none;
+        background: white;
+        border-radius: 50%;
+        width: 50px;
+        height: 50px;
+        cursor: pointer;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        position: fixed;
+        top: 1rem;
+        left: 1rem;
+        z-index: 20;
+    }
+
+    .hamburger-menu .bar {
+        width: 25px;
+        height: 3px;
+        background-color: #302b63;
+        margin: 3px 0;
+    }
+
+    .sidebar {
+        height: 100%;
+        width: 250px;
+        position: fixed;
+        top: 0;
+        left: -250px;
+        background-color: blue;
+        padding-top: 80px;
+        transition: 0.4s;
+        z-index: 10;
+        text-align: left;
+    }
+
+    .sidebar.active { left: 0; }
+
+    .nav-links { list-style: none; padding: 0; }
+    .nav-links li a {
+        padding: 15px 25px;
+        text-decoration: none;
+        color: white;
+        display: block;
+    }
+    
+.nav-links li a:hover {
+      background-color: lightblue;
+    }
+
+
+
+
+
+</style>
+</head>
+<body>
+
+<nav>
+    <button class="hamburger-menu">
+        <div class="bar"></div>
+        <div class="bar"></div>
+        <div class="bar"></div>
+    </button>
+</nav>
+
+<div id="sidebar-menu" class="sidebar">
+    <ul class="nav-links">
+        <li><a href="home.html">🏠 Home</a></li>
+        <li><a href="feedback.html">⭐️ Feedback</a></li>
+        <li><a href="team members.html">👥 Team members</a></li>
+        <li><a href="settings.html">⚙️ Settings</a></li>
+    </ul>
+</div>
+
+<h1>Game Lists</h1>
+
+<div class="scroll-container">
+    <div class="activity" onclick="goToPage('tictactoeHome.html')">
+<img src="s1.jpg" alt="TIC"> TIC TAC TOE
+    </div>
+    <div class="activity" onclick="goToPage('balloonHome.html')">
+        <img src="s6.jpg" alt="BALLOON"> BALLOON
+    </div>
+    <div class="activity" onclick="goToPage('dabHome.html')">
+        <img src="S2.jpg" alt="DOT"> DOT AND BOX
+    </div>
+    <div class="activity" onclick="goToPage('snakeHome.html')">
+        <img src="snake.jpg" alt="SNAKE"> SNAKE
+    </div>
+    <div class="activity" onclick="goToPage('chessHome.html')">
+        <img src="S3.jpg" alt="CHESS"> CHESS
+    </div>
+    <div class="activity" onclick="goToPage('pongHome.html')">
+        <img src="s5.jpg" alt="PONG"> PONG
+    </div>
+</div>
+
+<button class="more-game-btn" onclick="goToPage('more.html')">
+    More games>>
+</button>
+
+<script>
+function goToPage(page) {
+    window.location.href = page;
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    const hamburger = document.querySelector('.hamburger-menu');
+    const sidebar = document.getElementById('sidebar-menu');
+    hamburger.addEventListener('click', function() {
+        sidebar.classList.toggle('active');
+    });
+});
+</script>
+
+</body>
+</html> 

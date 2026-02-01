@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8" />
+<title>Dino Game (Facing Right, Left-to-Right Cactus)</title>
+<style>
+body {
+  text-align: center;
+  font-family: sans-serif;
+  margin: 0;
+      background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      color: white;
+      font-family: "Poppins", sans-serif;
+      overflow: hidden;
+}
+canvas {
+  border: 2px solid black;
+  background: #fff;
+  display: block;
+  margin: 10px auto;
+}
+button {
+  padding: 10px 20px;
+  font-size: 16px;
+  margin: 8px;
+  cursor: pointer;
+  border: none;
+  border-radius: 20px;
+  background: linear-gradient(45deg, #ff00cc, #333399);
+  box-shadow: 0 0 15px rgba(255,0,204,0.6); 
+  transition: 0.3s;color: white;
+  font-weight: bold;
+transform: scale(1.1);
+box-shadow: 0 0 25px #00fff2, 0 0 35px #ff00d4; }
+#gameArea { display: none; }
+button:hover {
+  transform: scale(1.2) translateY(-2px);
+  background: linear-gradient(45deg, #00fff2, #ff00d4);
+  box-shadow: 
+    0 0 20px #00fff2,
+    0 0 40px #ff00d4,
+    0 0 60px rgba(255, 0, 204, 0.9);
+}
+
+button:active {
+  transform: scale(1.05);
+  box-shadow: 0 0 10px #00fff2;
+}
+#homeBtn {
+  background: linear-gradient(45deg, #ff512f, #dd2476);
+}
+@keyframes shake {
+  0% { transform: translate(0, 0); }
+  20% { transform: translate(-5px, 3px); }
+  40% { transform: translate(5px, -3px); }
+  60% { transform: translate(-5px, -3px); }
+  80% { transform: translate(5px, 3px); }
+  100% { transform: translate(0, 0); }
+}
+
+.shake {
+  animation: shake 0.3s;
+}
+</style>
+</head>
+<body>
+
+<h1>🦖 Dino Game</h1>
+
+<div id="startArea">
+  <button id="startBtn">Start Game</button>
+  <button id="backHomeBtn">Back Home</button>
+</div>
+
+<div id="gameArea">
+  <p id="score">Score: 0</p>
+  <canvas id="game" width="400" height="250"></canvas>
+  
+  <br />
+  <button id="backBtn">Back</button>
+</div>
+<div id="gameOverScreen" style="
+  display:none;
+  position:fixed;
+  top:0; left:0;
+  width:100%; height:100%;
+  background:rgba(0,0,0,0.8);
+  color:white;
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+  align-items:center;
+  z-index:10;
+">
+  <h1>😢 Game Over</h1>
+  <p id="finalScore">Score: 0</p>
+  <button onclick="startGame()">Restart</button>
+  
+</div>
+
+<script>
+var canvas = document.getElementById("game");
+var ctx = canvas.getContext("2d");
+
+// Dino object (facing right, start on right side)
+var dino = { x: 290, y: 150, size: 30, velocity: 0, jumpCount: 0 };
+var maxJump = 2;
+var speed = 4;
+var score = 0;
+
+// Cacti start from LEFT and move right
+var cacti = [
+  { x: -50, y: 150 },
+  { x: -200, y: 150 },
+  { x: -350, y: 150 },
+];
+
+var gameLoop;
+
+// Start Game
+function startGame() {
+  document.getElementById("gameOverScreen").style.display = "none";
+  document.getElementById("startArea").style.display = "none";
+  document.getElementById("gameArea").style.display = "block";
+  score = 0;
+  speed = 4;
+  dino.y = 150;
+  dino.velocity = 0;
+  dino.jumpCount = 0;
+  dino.x = 290; // Right side
+  document.getElementById("score").innerText = "Score: 0";
+
+  // Reset cacti
+  cacti = [
+    { x: -50, y: 150 },
+    { x: -200, y: 150 },
+    { x: -350, y: 150 },
+  ];
+
+  if (gameLoop) clearInterval(gameLoop);
+  gameLoop = setInterval(draw, 30);
+}
+
+// Back Home
+function backHome() {
+  if (gameLoop) clearInterval(gameLoop);
+  document.getElementById("gameArea").style.display = "none";
+  document.getElementById("startArea").style.display = "block";
+  
+}
+
+// Game Over
+/*function gameOver() {
+  clearInterval(gameLoop);
+  alert("Game Over 😢\nScore: " + score);
+  backHome();
+}*/
+function gameOver() {
+  clearInterval(gameLoop);
+  document.getElementById("finalScore").innerText = "Score: " + score;
+  document.getElementById("gameOverScreen").style.display = "flex";
+}
+
+// Draw function
+function draw() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  // Draw Dino (🦖 facing right)
+  ctx.font = "30px Arial";
+  ctx.fillText("🦖", dino.x, dino.y + 30);
+
+  // Dino gravity
+  if (dino.jumpCount > 0 || dino.y < 150) {
+    dino.velocity += 1;
+    dino.y += dino.velocity;
+    if (dino.y >= 150) {
+      dino.y = 150;
+      dino.velocity = 0;
+      dino.jumpCount = 0;
+    }
+  }
+
+  // Draw cacti
+  ctx.font = "30px Arial";
+  for (let i = 0; i < cacti.length; i++) {
+    ctx.fillText("🌵", cacti[i].x, cacti[i].y + 30);
+
+    cacti[i].x += speed; // Move LEFT→RIGHT
+
+    // Collision
+    if (
+      cacti[i].x < dino.x + dino.size &&
+      cacti[i].x + 20 > dino.x &&
+      dino.y + dino.size > cacti[i].y
+    ) {
+		screenShake();
+      setTimeout(gameOver,200);
+    }
+
+    // If cactus goes off right, reset to left
+    if (cacti[i].x > canvas.width + 30) {
+      cacti[i].x = -50 - Math.random() * 150;
+      score++;
+      speed += 0.2;
+      document.getElementById("score").innerText = "Score: " + score;
+    }
+  }
+}
+
+// Jump
+function jump() {
+  if (dino.jumpCount < maxJump) {
+    dino.velocity = -12;
+    dino.jumpCount++;
+  }
+}
+function screenShake() {
+  canvas.classList.add("shake");
+  setTimeout(() => {
+    canvas.classList.remove("shake");
+  }, 300);
+}
+
+// Event listeners
+document.addEventListener("keydown", (e) => { if (e.code === "Space") jump(); });
+canvas.addEventListener("touchstart", jump);
+document.getElementById("startBtn").addEventListener("click", startGame);
+document.getElementById("backBtn").addEventListener("click", backHome);
+window.onload=function(){
+document.getElementById("gameOverScreen").style.display="none";
+document.getElementById("backHomeBtn").addEventListener("click", function () {
+  window.location.href = "dinohome.html"; // Home Page file name
+});
+};
+</script>
+
+</body>
+</html>

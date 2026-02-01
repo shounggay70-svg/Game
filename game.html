@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tic Tac Toe - Home</title>
+  <style>
+    body {
+      margin: 0;
+      height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+      font-family: "Poppins", sans-serif;
+      color: white;
+      overflow: hidden;
+    }
+    .container {
+      text-align: center;
+      padding: 100px;
+      background: rgba(255,255,255,0.05);
+      border-radius: 20px;
+      box-shadow: 0 0 25px rgba(0,255,255,0.2), inset 0 0 25px rgba(255,0,255,0.2);
+      backdrop-filter: blur(12px);
+      animation: fadeIn 1.5s ease-in-out;
+    }
+    h1 {
+      font-size: 3rem;
+      letter-spacing: 2px;
+      margin-bottom: 15px;
+      text-shadow: 0 0 20px #00fff2, 0 0 30px #ff00d4;
+      animation: glow 2s infinite alternate;
+    }
+    @keyframes glow {
+      from { text-shadow: 0 0 15px #00fff2; }
+      to { text-shadow: 0 0 30px #ff00d4, 0 0 40px #00fff2; }
+    }
+    p {
+      font-size: 1.2rem;
+      margin-bottom: 25px;
+      opacity: 0.85;
+    }
+    .btn {
+      display: inline-block;
+      margin: 12px;
+      padding: 14px 28px;
+      border: none;
+      border-radius: 35px;
+      font-size: 1.1rem;
+      color: white;
+      background: linear-gradient(45deg, #00f2fe, #4facfe, #ff00d4);
+      background-size: 200% 200%;
+      cursor: pointer;
+      transition: 0.4s;
+      box-shadow: 0 0 15px rgba(0,255,255,0.6);
+      animation: gradientMove 3s infinite alternate;
+      text-decoration: none;
+    }
+    .btn:hover {
+      transform: scale(1.1);
+      box-shadow: 0 0 25px #ff00d4, 0 0 35px #00fff2;
+    }
+    @keyframes gradientMove {
+      0% { background-position: left; }
+      100% { background-position: right; }
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: scale(0.8); }
+      to { opacity: 1; transform: scale(1); }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🎮 Tic Tac Toe</h1>
+    <p>Select a mode to begin your game</p>
+    <a href="phyu.html?mode=AI" class="btn">Play vs AI 🤖</a>
+    <a href="phyu.html?mode=2P" class="btn">2 Players 👥</a>
+  </div>
+</body>
+</html>

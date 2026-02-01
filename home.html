@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Game Galaxy</title>
+
+  <!-- ✅ Google Fonts: Raleway -->
+  <link href="https://fonts.googleapis.com/css2?family=Raleway&display=swap" rel="stylesheet">
+
+  <!-- ✅ Font Awesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 100;
+      font-family: 'Raleway', sans-serif;
+      background-image: url('game.jpg');
+      background-size: cover;
+      background-position: center;
+      background-repeat: no-repeat;
+      //background-color: #BC13FE;
+      color: white;
+      overflow-x: hidden;
+      text-shadow: 0 0 20px #00fff2, 0 0 30px #ff00d4;
+    }
+
+    /* Hamburger menu button */
+    .hamburger-menu {
+      border: none;
+      border-radius: 50%;
+      width: 50px;
+      height: 50px;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      position: fixed;
+      top: 1rem;
+      left: 1rem;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+      z-index: 20;
+      background-color: #fff;
+    }
+
+    .hamburger-menu .bar {
+      width: 60%;
+      height: 3px;
+      background-color: #BC13FE;
+      margin: 3px 0;
+      transition: all 0.3s ease;
+    }
+
+    /* Sidebar menu */
+    .sidebar {
+      height: 100%;
+      width: 250px;
+      position: fixed;
+      top: 0;
+      left: -250px;
+      background-color:blue ;
+      padding-top: 60px;
+      box-shadow: 2px 0 5px rgba(0, 0, 0, 0.2);
+      transition: left 0.5s ease;
+      z-index: 10;
+    }
+
+    .sidebar.active {
+      left: 0;
+    }
+
+    .nav-links {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+
+    .nav-links li a {
+      padding: 15px 20px;
+      text-decoration: none;
+      font-size: 1.1rem;
+      color: white;
+      display: block;
+      transition: background-color 0.3s ease;
+    }
+
+    .nav-links li a:hover {
+      background-color: lightblue;
+    }
+
+    /* Hero Section */
+    .hero {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 60px 40px;
+      flex-wrap: wrap;
+    }
+
+    .hero-text {
+      max-width: 500px;
+      margin-left: 250px;
+      transition: margin 0.3s ease;
+    }
+
+    .hero-text h1 {
+      font-size: 60px;
+      margin-bottom: 25px;
+      text-shadow: 0 0 10px #6a00f4;
+    }
+
+    .hero-text p {
+      font-size: 22px;
+      line-height: 1.6;
+    }
+
+    .hero-img img {
+      width: 400px;
+      animation: float 3s ease-in-out infinite;
+    }
+
+    @keyframes float {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-20px); }
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      .hero {
+        flex-direction: column;
+        text-align: center;
+      }
+
+      .hero-text {
+        margin-left: 0;
+      }
+
+      .hero-text h1 {
+        font-size: 50px;
+      }
+
+      .hero-text p {
+        font-size: 18px;
+      }
+
+      .hero-img img {
+        width: 300px;
+        margin-top: 30px;
+      }
+
+      .sidebar {
+        width: 200px;
+        left: -200px;
+      }
+
+      .sidebar.active {
+        left: 0;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Navigation -->
+  <nav>
+    <button class="hamburger-menu">
+      <div class="bar"></div>
+      <div class="bar"></div>
+      <div class="bar"></div>
+    </button>
+  </nav>
+<!-- Sidebar -->
+  <div id="sidebar-menu" class="sidebar">
+    <ul class="nav-links">
+      <li><a href="game lists.html">🎮 Game lists</a></li>
+      <li><a href="feedback.html">⭐️ Feedback</a></li>
+      <li><a href="team members.html">👥 Team members</a></li>
+      <li><a href="settings.html">⚙️ Settings</a></li>
+    </ul>
+  </div>
+<!-- Hero Section -->
+  <section class="hero">
+    <div class="hero-text">
+      <h1>🎮 Game Galaxy</h1>
+      <p>The aim of this project is to develop an offline gaming hub that brings together multiple genres of games in one platform, allowing players to enjoy fun, entertainment, and learning without the need for internet connectivity.</p>
+      <button onclick="toggleMusic()">🎵 Toggle Music</button>
+    </div>
+    
+      
+    
+  </section>
+
+  <!-- Background Music -->
+  <audio id="bg-music" autoplay loop>
+    <source src="game music.mp3" type="audio/mpeg">
+    Your browser does not support the audio element.
+  </audio>
+
+  <!-- JavaScript -->
+  <script>
+    // Sidebar toggle
+    document.addEventListener('DOMContentLoaded', function() {
+      const hamburger = document.querySelector('.hamburger-menu');
+      const sidebar = document.getElementById('sidebar-menu');
+      hamburger.addEventListener('click', function() {
+        sidebar.classList.toggle('active');
+      });
+    });
+
+    // Background music control
+    const bgMusic = document.getElementById("bg-music");
+
+    // Restore music state from localStorage
+    if (localStorage.getItem("musicPlaying") === "true") {
+      bgMusic.play().catch(() => {
+        console.log("Autoplay blocked by browser until user interacts.");
+      });
+    } else {
+      bgMusic.pause();
+    }
+
+    // Save play/pause state
+    bgMusic.addEventListener("play", () => {
+      localStorage.setItem("musicPlaying", "true");
+    });
+
+    bgMusic.addEventListener("pause", () => {
+      localStorage.setItem("musicPlaying", "false");
+    });
+
+    // Default volume
+    bgMusic.volume = 0.4;
+
+    // Toggle music button
+    function toggleMusic() {
+      if (bgMusic.paused) {
+        bgMusic.play();
+      } else {
+        bgMusic.pause();
+      }
+    }
+  </script>
+</body>
+</html>

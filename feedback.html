@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Game Feedback Form</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: #121212;
+      color: #fff;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+    }
+
+    .feedback-container {
+      background: #1e1e1e;
+      padding: 20px;
+      border-radius: 12px;
+      width: 90%;
+      max-width: 400px;
+      box-shadow: 0 0 10px #00f0ff;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    h2 {
+      margin-bottom: 10px;
+    }
+
+    .emoji-rating {
+      display: flex;
+      justify-content: center;
+      margin-bottom: 10px;
+    }
+
+    .emoji-rating span {
+      font-size: 2rem;
+      margin: 0 5px;
+      cursor: pointer;
+      transition: transform 0.2s;
+    }
+
+    .emoji-rating span.selected {
+      transform: scale(1.3);
+      text-shadow: 0 0 10px #00f0ff;
+    }
+
+    .tag-options {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      justify-content: center;
+      margin: 10px 0;
+    }
+
+    .tag {
+      background: #333;
+      border: none;
+      padding: 6px 12px;
+      border-radius: 20px;
+      color: #fff;
+      cursor: pointer;
+    }
+
+    .tag.selected {
+      background: #00f0ff;
+      color: #000;
+    }
+
+    textarea {
+      width: 100%;
+      height: 80px;
+      padding: 10px;
+      border-radius: 8px;
+      border: none;
+      resize: none;
+      margin-top: 10px;
+      box-sizing: border-box;
+    }
+
+    .button-group {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      width: 100%;
+      margin-top: 10px;
+    }
+
+    #submit-btn, #home-btn {
+      flex: 1;
+      padding: 10px;
+      border: none;
+      border-radius: 8px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    #submit-btn {
+      background: #00f0ff;
+      color: #000;
+    }
+
+    #home-btn {
+      background: #333;
+      color: #fff;
+      transition: background 0.3s;
+    }
+
+    #home-btn:hover {
+      background: #00f0ff;
+      color: #000;
+    }
+
+    /* Modal styles */
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 999;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 240, 255, 0.1);
+      backdrop-filter: blur(4px);
+      justify-content: center;
+      align-items: center;
+    }
+
+    .modal-content {
+      background: #1e1e1e;
+      border-radius: 12px;
+      padding: 20px;
+      text-align: center;
+      box-shadow: 0 0 20px #00f0ff;
+      animation: popUp 0.4s ease-out;
+      color: #fff;
+      max-width: 300px;
+    }
+
+    @keyframes popUp {
+      from { transform: scale(0.8); opacity: 0; }
+      to { transform: scale(1); opacity: 1; }
+    }
+
+    .close-btn {
+      float: right;
+      font-size: 1.5rem;
+      cursor: pointer;
+      color: #00f0ff;
+    }
+  </style>
+</head>
+<body>
+  <div class="feedback-container">
+    <h2>🎮 Game Feedback</h2>
+
+    <div class="emoji-rating">
+      <span data-rating="1">😠</span>
+      <span data-rating="2">🙁</span>
+      <span data-rating="3">😐</span>
+      <span data-rating="4">🙂</span>
+      <span data-rating="5">😎</span>
+    </div>
+
+    <p>What should we improve?</p>
+    <div class="tag-options">
+      <button class="tag">Gameplay</button>
+      <button class="tag">Graphics</button>
+      <button class="tag">Sound</button>
+      <button class="tag">Difficulty</button>
+      <button class="tag">Navigation</button>
+    </div>
+
+    <textarea id="suggestions-box" placeholder="Other suggestions..."></textarea>
+
+    <div class="button-group">
+      <button id="submit-btn">Submit</button>
+      <button id="home-btn">🏠 Home</button>
+    </div>
+  </div>
+<div id="custom-alert" class="modal">
+    <div class="modal-content">
+      <span class="close-btn">&times;</span>
+      <h3> Thank you,My User🎀!</h3>
+      <p id="feedback-text"></p>
+    </div>
+  </div>
+  <script>
+    // Emoji rating selection
+    document.querySelectorAll('.emoji-rating span').forEach(emoji => {
+      emoji.addEventListener('click', () => {
+        document.querySelectorAll('.emoji-rating span').forEach(e => e.classList.remove('selected'));
+        emoji.classList.add('selected');
+      });
+    });
+
+    // Tag selection toggle
+    document.querySelectorAll('.tag').forEach(tag => {
+      tag.addEventListener('click', () => {
+        tag.classList.toggle('selected');
+      });
+    });
+
+    // Submit button
+    document.getElementById('submit-btn').addEventListener('click', () => {
+      const rating = document.querySelector('.emoji-rating span.selected')?.dataset.rating || 'None';
+      const selectedTags = Array.from(document.querySelectorAll('.tag.selected')).map(tag => tag.textContent);
+      const suggestions = document.getElementById('suggestions-box').value;
+      const feedbackTextElement = document.getElementById('feedback-text');
+
+      console.log('User Feedback:', { rating, selectedTags, suggestions });
+
+      // Update the content of the modal with the user's suggestions
+      if (suggestions.trim() !== '') {
+        feedbackTextElement.textContent =` Your suggestions: "${suggestions}" have been submitted successfully.`;
+      } else {
+        feedbackTextElement.textContent = 'Your feedback has been submitted successfully.';
+      }
+      
+      // Show custom alert modal
+      document.getElementById('custom-alert').style.display = 'flex';
+    });
+
+    // Close modal and redirect
+    document.querySelector('.close-btn').addEventListener('click', () => {
+      document.getElementById('custom-alert').style.display = 'none';
+      
+      // Use a small delay to ensure the modal is hidden before redirecting
+      setTimeout(() => {
+        window.location.href = 'thank u.html'; 
+      }, 200);
+    });
+
+    // Home button
+    document.getElementById('home-btn').addEventListener('click', () => {
+      window.location.href = 'home.html'; // Replace with your actual home page
+    });
+  </script>
+</body>
+</html>

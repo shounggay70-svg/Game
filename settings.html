@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Audio Settings</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <style>
+        body {
+            position: relative;
+            background-color: #0d0f2f;
+            color: #ffffff;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+    /* Back Key Style */
+        .back-key {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            font-size: 2em;
+            color: white;
+            text-decoration: none;
+            cursor: pointer;
+            transition: transform 0.2s ease;
+        }
+
+        .back-key:hover {
+            transform: scale(1.2);
+        }
+        
+        /* Audio Settings စာသားကို Animation ပေးရန် */
+        @keyframes glow {
+            0% {
+                text-shadow: 0 0 5px lightblue, 0 0 10px lightblue, 0 0 15px lightblue;
+            }
+            50% {
+                text-shadow: 0 0 10px lightblue, 0 0 20px lightblue, 0 0 30px lightblue;
+            }
+            100% {
+                text-shadow: 0 0 5px lightblue, 0 0 10px lightblue, 0 0 15px #a44afe;
+            }
+        }
+
+        h1 {
+            color: white;
+            font-size: 2.5em;
+            margin-bottom: 40px;
+            animation: glow 1.5s infinite alternate;
+        }
+
+        /* Volume Settings အတွက် Container */
+        .setting-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            width: 100%;
+            max-width: 450px;
+            margin-bottom: 25px;
+        }
+
+        .volume-label {
+            font-size: 1.2em;
+            width: 150px;
+            margin-right: 20px;
+        }
+
+        /* Volume Slider ပုံစံများ */
+        input[type="range"] {
+            -webkit-appearance: none;
+            width: 100%;
+            height: 10px;
+            background: #4a63b0;
+            border-radius: 5px;
+            outline: none;
+            margin-right: 10px;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 20px;
+            height: 20px;
+            background: #a44afe;
+            border-radius: 50%;
+            cursor: pointer;
+        }
+        
+        input[type="range"]::-moz-range-thumb {
+            width: 20px;
+            height: 20px;
+            background: #a44afe;
+            border-radius: 50%;
+            cursor: pointer;
+        }
+
+        /* Mute Checkbox ပုံစံများ */
+        input[type="checkbox"] {
+            display: none;
+        }
+
+        .custom-checkbox {
+            position: relative;
+            width: 25px;
+            height: 25px;
+            border: 2px solid #a44afe;
+            background-color: #0d0f2f;
+            cursor: pointer;
+            flex-shrink: 0;
+            margin-left: 10px;
+            border-radius: 50%;
+        }
+
+        input[type="checkbox"]:checked + .custom-checkbox {
+            background-color: #a44afe;
+        }
+
+        .custom-checkbox::after {
+            content: '';
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            width: 8px;
+            height: 12px;
+            border: solid #ffffff;
+            border-width: 0 3px 3px 0;
+            transform: translate(-50%, -50%) rotate(45deg);
+            display: none;
+        }
+
+        input[type="checkbox"]:checked + .custom-checkbox::after {
+            display: block;
+        }
+
+        /* Buttons Container */
+        .buttons-container {
+            margin-top: 40px;
+        }
+/* Play Buttons ပုံစံများ */
+        button {
+background-color: #4a63b0;
+            color: white;
+            font-size: 1.1em;
+            font-weight: bold;
+            border: none;
+            padding: 12px 25px;
+            margin: 0 10px;
+            cursor: pointer;
+            border-radius: 8px;
+            transition: background-color 0.3s ease, transform 0.1s ease;
+        }
+
+        button:hover {transform: scale(1.1);
+    box-shadow: 0 0 25px #ff00d4, 0 0 35px #00fff2;
+        }
+
+        button:active {
+            transform: translateY(2px);
+        }
+    </style>
+</head>
+<body>
+
+    <a href="home.html" class="back-key" onclick="goBack()">
+        <i class="fas fa-arrow-left"></i>
+    </a>
+
+    <h1>Audio Settings</h1>
+
+    <div class="setting-item">
+        <label for="masterVolume" class="volume-label">Master Volume:</label>
+        <input type="range" id="masterVolume" min="0" max="1" step="0.01" value="1">
+        <input type="checkbox" id="muteAll" onchange="toggleMuteAll()">
+        <label for="muteAll" class="custom-checkbox"></label>
+    </div>
+
+    <div class="setting-item">
+        <label for="musicVolume" class="volume-label">Music Volume:</label>
+        <input type="range" id="musicVolume" min="0" max="1" step="0.01" value="1">
+        <input type="checkbox" id="muteMusic" onchange="toggleMuteMusic()">
+        <label for="muteMusic" class="custom-checkbox"></label>
+    </div>
+
+    <div class="buttons-container">
+        <button onclick="playMusic()">Play Music</button>
+    </div>
+
+    <audio id="backgroundMusic" src="Game music.mp3" loop></audio>
+
+    <script>
+        const masterVolumeSlider = document.getElementById('masterVolume');
+        const musicVolumeSlider = document.getElementById('musicVolume');
+
+        const muteAllCheckbox = document.getElementById('muteAll');
+        const muteMusicCheckbox = document.getElementById('muteMusic');
+
+        const backgroundMusic = document.getElementById('backgroundMusic');
+
+        let lastMasterVolume = 1;
+        let lastMusicVolume = 1;
+        
+        function updateVolumes() {
+            const masterVolume = masterVolumeSlider.value;
+            const musicVolume = musicVolumeSlider.value;
+            
+            backgroundMusic.volume = masterVolume * musicVolume;
+        }
+
+        function toggleMuteAll() {
+            if (muteAllCheckbox.checked) {
+                lastMasterVolume = masterVolumeSlider.value;
+                lastMusicVolume = musicVolumeSlider.value;
+                masterVolumeSlider.value = 0;
+                musicVolumeSlider.value = 0;
+            } else {
+                masterVolumeSlider.value = lastMasterVolume;
+                musicVolumeSlider.value = lastMusicVolume;
+            }
+            updateVolumes();
+        }
+
+        function toggleMuteMusic() {
+            if (muteMusicCheckbox.checked) {
+                lastMusicVolume = musicVolumeSlider.value;
+                musicVolumeSlider.value = 0;
+            } else {
+                musicVolumeSlider.value = lastMusicVolume;
+            }
+            updateVolumes();
+        }
+
+        masterVolumeSlider.addEventListener('input', updateVolumes);
+        musicVolumeSlider.addEventListener('input', updateVolumes);
+
+        function playMusic() {
+            backgroundMusic.play();
+        }
+        
+       
+    </script>
+</body>
+</html>

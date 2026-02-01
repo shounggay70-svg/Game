@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="my">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Our Team</title>
+    <style>
+        /* CSS Styles */
+       
+ body {
+            position: relative;
+            background-color: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+            
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .team-container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 20px;
+            max-width: 1200px;
+            padding: 20px;
+             background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            border-radius: 10px;
+        }
+
+        .team-member {
+            background:#fff;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease;
+            width: 250px;
+            text-align: center;
+        }
+
+        .team-member:hover {
+            transform: translateY(-10px);
+        }
+
+        .team-member img {
+            width: 100%;
+            height: 250px;
+            object-fit: cover;
+            display: block;
+        }
+
+        .member-info {
+            padding: 15px;
+        }
+
+        .member-info h3 {
+            margin: 0 0 5px;
+            color: #333;
+        }
+
+        .member-info p {
+            margin: 0;
+            color: #777;
+            font-size: 14px;
+        }
+
+ /* CSS Styling */
+
+        /* Body and main content area */
+        body {
+            font-family: sans-serif;
+            margin: 0;
+            background-color: #4a63ba;
+        }
+
+        /* Hamburger menu button */
+        .hamburger-menu {
+            background-color: white;
+            border: none;
+            border-radius: 50%; /* Make it a circle */
+            width: 50px;
+            height: 50px;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            position: fixed;
+            top: 1rem;
+            left: 1rem;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+            z-index: 20;
+        }
+
+        .hamburger-menu .bar {
+            width: 60%;
+            height: 3px;
+            background-color: purple;
+            margin: 3px 0;
+            transition: all 0.3s ease;
+        }
+
+        /* Sidebar menu container */
+        .sidebar {
+            height: 100%;
+            width: 250px;
+            position: fixed;
+            top: 0;
+            left: -250px;
+            background-color: blue;
+            padding-top: 60px;
+            box-shadow: 2px 0 5px rgba(0, 0, 0, 0.2);
+            transition: left 0.5s ease;
+            z-index: 10;
+        }
+
+        /* Class to show the sidebar */
+        .sidebar.active {
+            left: 0;
+        }
+
+        /* Navigation links inside the sidebar */
+        .nav-links {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .nav-links li a {
+            padding: 15px 20px;
+            text-decoration: none;
+            font-size: 1.1rem;
+            color: white;
+            display: block;
+            transition: background-color 0.3s ease;
+        }
+
+        .nav-links li a:hover {
+            background-color: lightblue;
+        }
+    </style>
+</head>
+<body>
+<span>
+    <div class="team-container">
+        <div class="team-member">
+            <img src="p5.jpg" alt="Team Member Name">
+            <div class="member-info">
+                <h3>Mg Khant Si Thu</h3>
+                
+            </div>
+        </div>
+
+        <div class="team-member">
+            <img src="p6.jpg" alt="Team Member Name">
+            <div class="member-info">
+                <h3>Ma Thazin Phyo</h3>
+                
+            </div>
+        </div>
+
+        <div class="team-member">
+            <img src="p1.jpg" alt="Team Member Name">
+            <div class="member-info">
+                <h3>Ma Phyu Phyu Aye</h3>
+                
+            </div>
+        </div>
+<br><br>
+</span><br>
+
+<div class="team-member">
+            <img src="p4.jpg" alt="Team Member Name">
+            <div class="member-info">
+                <h3>Ma Hnin Wutt Yee</h3>
+                
+            </div>
+        </div>
+<div class="team-member">
+            <img src="p2.jpg" alt="Team Member Name">
+            <div class="member-info">
+                <h3>Ma Hsu Latt Win</h3>
+                
+            </div>
+        </div>
+
+
+
+        <div class="team-member">
+            <img src="p3.jpg" alt="Team Member Name">
+            <div class="member-info">
+                <h3>Nang Hsu That Htar</h3>
+                
+            </div>
+        </div>
+    </div>
+<nav>
+        <button class="hamburger-menu">
+            <div class="bar"></div>
+            <div class="bar"></div>
+            <div class="bar"></div>
+        </button>
+    </nav>
+
+    <div id="sidebar-menu" class="sidebar">
+        <ul class="nav-links">
+            <li><a href="home.html">🏠 Home</a></li>
+            <li><a href="game lists.html">🎮 Game lists</a></li>
+            <li><a href="feedback.html">⭐️ Feedback</a></li>
+            <li><a href="settings.html">⚙️ Settings</li>
+        </ul>
+    </div>
+<script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const hamburger = document.querySelector('.hamburger-menu');
+            const sidebar = document.getElementById('sidebar-menu');
+
+            hamburger.addEventListener('click', function() {
+                sidebar.classList.toggle('active');
+            });
+        });
+    </script>
+ 
+</body>
+</html>

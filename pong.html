@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Pong Breakout</title>
+  <style>
+    body {
+      background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+    }
+    h1 {
+      color: pink;
+      margin-bottom: 15px;
+      font-size: 2.8rem;
+      letter-spacing: 2px;
+      text-shadow: 0 0 20px #00fff2, 0 0 30px #ff00d4;
+      animation: glowText 2s infinite alternate;
+    }
+    @keyframes glowText {
+      from { text-shadow: 0 0 10px #00fff2; }
+      to { text-shadow: 0 0 25px #ff00d4, 0 0 35px #00fff2; }
+    }
+    canvas {
+      background: #111;
+      border: 2px solid #fff;
+    }
+    .btns, #message {
+      margin-top: 12px;
+      color: white;
+      font-size: 30px;
+      font-family: Arial, sans-serif;
+    }
+    button {
+      padding: 8px 16px;
+      cursor: pointer;
+      border: none;
+      border-radius: 6px;
+      background: linear-gradient(45deg, #ff00cc, #333399);
+      color: white;
+      font-size: 1rem;
+      margin-top: 10px;
+      box-shadow: 0 0 15px rgba(255,0,204,0.6);
+      transition: 0.3s;
+    }
+    button:hover {
+      transform: scale(1.1);
+      box-shadow: 0 0 25px #00fff2, 0 0 35px #ff00d4;
+    }
+  </style>
+</head>
+<body>
+  <h1>Pong Game</h1>
+  <canvas id="pong" width="600" height="400"></canvas>
+  <div id="message"></div>
+  <div class="btns">
+    <button onclick="restartGame()">Restart</button>
+    <button onclick="goHome()">Back</button>
+  </div>
+
+  <script>
+    const canvas = document.getElementById("pong");
+    const ctx = canvas.getContext("2d");
+    const msgBox = document.getElementById("message");
+
+    // Ball & Paddle
+    let ball = { x:300, y:200, dx:4, dy:4, r:8 };
+    let paddle = { x:260, y:380, w:80, h:10 };
+
+    // Scores
+    let score = 0;
+    let bestScore = localStorage.getItem("pongBestScore")
+                   ? parseInt(localStorage.getItem("pongBestScore"))
+                   : 0;
+
+    let gameOver = false;
+
+    // Bricks
+    const rowCount = 4, colCount = 8;
+    const brickW = 65, brickH = 20;
+    const brickPadding = 8;
+    const brickOffsetTop = 30;
+    const brickOffsetLeft = 20;
+
+    let bricks = [];
+    for (let c = 0; c < colCount; c++) {
+      bricks[c] = [];
+      for (let r = 0; r < rowCount; r++) {
+        bricks[c][r] = { x:0, y:0, visible:true };
+      }
+    }
+
+    // Paddle control
+    document.addEventListener("mousemove", e => {
+      const rect = canvas.getBoundingClientRect();
+      paddle.x = e.clientX - rect.left - paddle.w / 2;
+    });
+
+    // Draw bricks
+    function drawBricks() {
+      for (let c = 0; c < colCount; c++) {
+        for (let r = 0; r < rowCount; r++) {
+          if (bricks[c][r].visible) {
+            const bx = c * (brickW + brickPadding) + brickOffsetLeft;
+            const by = r * (brickH + brickPadding) + brickOffsetTop;
+            bricks[c][r].x = bx;
+            bricks[c][r].y = by;
+            ctx.fillStyle = "#09f";
+            ctx.fillRect(bx, by, brickW, brickH);
+          }
+        }
+      }
+    }
+
+    // Brick collision
+    function brickCollision() {
+      for (let c = 0; c < colCount; c++) {
+        for (let r = 0; r < rowCount; r++) {
+          const b = bricks[c][r];
+          if (b.visible) {
+            if (
+              ball.x > b.x && ball.x < b.x + brickW &&
+              ball.y - ball.r < b.y + brickH && ball.y + ball.r > b.y
+            ) {
+              ball.dy *= -1;
+              b.visible = false;
+              score += 5;
+            }
+          }
+        }
+      }
+    }
+
+    // Game loop
+    function gameLoop() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      // Ball
+      ctx.beginPath();
+      ctx.arc(ball.x, ball.y, ball.r, 0, Math.PI * 2);
+      ctx.fillStyle = "white";
+      ctx.fill();
+
+      // Paddle
+      ctx.fillStyle = "lime";
+      ctx.fillRect(paddle.x, paddle.y, paddle.w, paddle.h);
+
+      // Bricks
+      drawBricks();
+	  // Move ball
+      if (!gameOver) {
+        ball.x += ball.dx;
+        ball.y += ball.dy;
+      }
+
+      // Wall bounce
+      if (ball.x - ball.r < 0 || ball.x + ball.r > canvas.width) ball.dx *= -1;
+      if (ball.y - ball.r < 0) ball.dy *= -1;
+
+      // Paddle bounce
+      if (
+        ball.y + ball.r >= paddle.y &&
+        ball.x >= paddle.x &&
+        ball.x <= paddle.x + paddle.w
+      ) {
+        ball.dy *= -1;
+        score++;
+      }
+
+      // Brick hit
+      brickCollision();
+
+      // Game over
+      if (ball.y > canvas.height && !gameOver) {
+        gameOver = true;
+        if (score > bestScore) {
+          bestScore = score;
+          localStorage.setItem("pongBestScore", bestScore);
+        }
+        msgBox.textContent = `Game Over! Score: ${score} | Best: ${bestScore}`;
+      }
+
+      // Draw score + best
+      ctx.fillStyle = "white";
+      ctx.font = "16px Arial";
+      ctx.fillText("Score: " + score + " | Best: " + bestScore, 10, 20);
+    }
+
+    setInterval(gameLoop, 30);
+
+    // Buttons
+    function restartGame() {
+      location.reload();
+    }
+    function goHome() {
+      window.location.href = "pongHome.html"; // <- သင့် homepage နဲ့ အစားထိုး
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Pong Breakout - Home</title>
+  <!-- Font Awesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <style>
+    body {
+      margin: 0;
+      font-family: "Segoe UI", Arial, sans-serif;
+      background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+      color: #fff;
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+    .container {
+      text-align: center;
+      padding: 40px;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.15);
+      border-radius: 16px;
+      backdrop-filter: blur(6px);
+      box-shadow: 0 0 25px rgba(0,255,255,0.2), inset 0 0 25px rgba(255,0,255,0.2);
+      max-width: 500px;
+    }
+    h1 {
+      font-size: 2.5rem;
+      margin-bottom: 10px;
+      letter-spacing: 2px;
+      text-shadow: 0 0 20px #00fff2, 0 0 30px #ff00d4;
+      animation: glow 2s infinite alternate;   
+    }
+    @keyframes glow {
+      from { text-shadow: 0 0 15px #00fff2; }
+      to { text-shadow: 0 0 30px #ff00d4, 0 0 40px #00fff2; }
+    }
+    p {
+      font-size: 1rem;
+      line-height: 1.6;
+      margin-bottom: 30px;
+    }
+    .btn {
+      padding: 12px 30px;
+      font-weight: bold;
+      display: inline-block;
+      margin: 12px;
+      border: none;
+      border-radius: 35px;
+      font-size: 1.1rem;
+      color: white;
+      background: linear-gradient(45deg, #00f2fe, #4facfe, #ff00d4);
+      background-size: 200% 200%;
+      cursor: pointer;
+      transition: 0.4s;
+      box-shadow: 0 0 15px rgba(0,255,255,0.6);
+      animation: gradientMove 3s infinite alternate;
+      text-decoration: none;
+    }
+    .btn:hover {
+      background: #2a9df4;
+      transform: translateY(-2px);
+      box-shadow: 0 0 25px #ff00d4, 0 0 35px #00fff2;
+    }
+    .icons {
+      font-size: 1.5rem;
+      margin-bottom: 20px;
+    }
+    .icons i {
+      margin: 0 12px;
+      color: #4af;
+      transition: color 0.3s;
+    }
+    .icons i:hover {
+      color: #2a9df4;
+    }
+    footer {
+      position: absolute;
+      bottom: 15px;
+      font-size: 12px;
+      color: #777;
+    }
+    @keyframes gradientMove {
+      0% { background-position: left; }
+      100% { background-position: right; }
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: scale(0.8); }
+      to { opacity: 1; transform: scale(1); }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1><i class="fa-solid fa-table-tennis-paddle-ball"></i> PONG BREAKOUT</h1>
+
+    <div class="icons">
+      <i class="fa-solid fa-gamepad"></i>
+      <i class="fa-solid fa-brick-wall"></i>
+      <i class="fa-solid fa-star"></i>
+    </div>
+
+    <p>
+      Welcome to the Pong Breakout game!  
+      Use your paddle to bounce the ball and break all the blocks.  
+      Try to get the highest score possible!
+    </p>
+
+    <a href="pong.html" class="btn">
+      <i class="fa-solid fa-play"></i> Start Game
+    </a>
+    <a href="game lists.html" class="btn"> Back◀
+    </a>
+  </div>
+
+  <footer>
+    <i class="fa-regular fa-copyright"></i> 2025 Your Name
+  </footer>
+</body>
+</html>

@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Dot And Box</title>
+  <style>
+    body {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin-top: 20px;
+      background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+	  margin: 0;
+      justify-content: center;
+      height: 100vh;
+      color: white;
+      font-family: "Poppins", sans-serif;
+      overflow: hidden;
+    }
+    canvas { border: 1px solid black; background:lightblue; }
+    p { font-weight: bold; margin: 10px; font-size: 18px; }
+    button {
+      margin: 10px;
+      border: none;
+      font-size: 16px;
+      cursor: pointer;
+	  padding: 12px 25px;
+      border: none;
+      border-radius: 30px;
+      background: linear-gradient(45deg, #ff00cc, #333399);
+      color: white;
+      font-size: 1rem;
+      cursor: pointer;
+      margin-top: 10px;
+      box-shadow: 0 0 15px rgba(255,0,204,0.6);
+      transition: 0.3s;
+    }
+    button:hover {transform: scale(1.1); box-shadow: 0 0 25px #00fff2, 0 0 35px #ff00d4; }
+  </style>
+</head>
+<body>
+  <h2>Dot And Box</h2>
+  <canvas id="gameCanvas" width="400" height="400"></canvas>
+  <p id="status"></p>
+  <button onclick="resetGame()">Restart</button>
+  <button onclick="goHome()">Back</button>
+
+  <script>
+    const canvas = document.getElementById("gameCanvas");
+    const ctx = canvas.getContext("2d");
+    const statusText = document.getElementById("status");
+
+    const gridSize = 4;
+    const spacing = canvas.width / (gridSize + 1);
+
+    let dots = [], lines = [], boxes = [];
+    let selectedDot = null;
+    let currentPlayer = 1; // 1 = Player1, 2 = Player2 or AI
+    let gameOver = false;
+
+    // Detect mode from URL
+    const urlParams = new URLSearchParams(window.location.search);
+    const mode = urlParams.get("mode");
+    const aiMode = mode === "AI";
+
+    function initGame() {
+      dots = []; lines = []; boxes = [];
+      selectedDot = null;
+      currentPlayer = 1;
+      gameOver = false;
+      statusText.textContent = currentPlayerText();
+
+      for (let row=1; row<=gridSize; row++) {
+        for (let col=1; col<=gridSize; col++) {
+          dots.push({ x: col*spacing, y: row*spacing, radius:8 });
+        }
+      }
+      drawBoard();
+    }
+
+    function drawBoard() {
+      ctx.clearRect(0,0,canvas.width,canvas.height);
+
+      lines.forEach(line => {
+        ctx.strokeStyle = line.player===1 ? "blue":"red";
+        ctx.lineWidth=3;
+        ctx.beginPath();
+        ctx.moveTo(line.start.x,line.start.y);
+        ctx.lineTo(line.end.x,line.end.y);
+        ctx.stroke();
+      });
+
+      dots.forEach(dot=>{
+        ctx.beginPath();
+        ctx.arc(dot.x,dot.y,dot.radius,0,Math.PI*2);
+        ctx.fillStyle="black";
+        ctx.fill();
+      });
+
+      boxes.forEach(box=>{
+        ctx.fillStyle = box.player===1?"blue":"red";
+        ctx.font="30px Arial";
+        ctx.textAlign="center";
+        ctx.textBaseline="middle";
+        ctx.fillText(box.player===1?"O":"X", box.cx, box.cy);
+      });
+
+      if(selectedDot){
+        ctx.beginPath();
+        ctx.arc(selectedDot.x,selectedDot.y,selectedDot.radius+4,0,Math.PI*2);
+        ctx.strokeStyle="orange";
+        ctx.lineWidth=3;
+        ctx.stroke();
+      }
+    }
+
+    function currentPlayerText(){
+      if(gameOver) return "";
+      if(currentPlayer===1) return "Player 1's turn (You)";
+      if(currentPlayer===2) return aiMode?"AI's turn (Ai)":"Player 2's turn (Ai)";
+    }
+
+    function handleClick(e){
+      if(gameOver || (aiMode && currentPlayer===2)) return;
+
+      const rect = canvas.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
+
+      let clickedDot = dots.find(d=>Math.hypot(d.x-x,d.y-y)<=d.radius+5);
+      if(!clickedDot) return;
+
+      if(!selectedDot){ selectedDot = clickedDot; }
+      else if(selectedDot!==clickedDot){
+        let dx = Math.abs(selectedDot.x - clickedDot.x);
+        let dy = Math.abs(selectedDot.y - clickedDot.y);
+        let valid = (dx===spacing && dy===0) || (dx===0 && dy===spacing);
+
+        if(valid){
+          let exists = lines.some(l=>
+            (l.start===selectedDot && l.end===clickedDot) ||(l.start===clickedDot && l.end===selectedDot)
+          );
+         if(!exists){
+            lines.push({ start:selectedDot, end:clickedDot, player:currentPlayer });
+            let completed = checkCompletedBox(selectedDot,clickedDot,currentPlayer);
+            if(!completed) currentPlayer = aiMode?2:( currentPlayer===1?2:1);
+            statusText.textContent = currentPlayerText();
+            drawBoard();
+            checkGameOver();
+            if(aiMode && currentPlayer===2 && !gameOver) setTimeout(aiMove,500);
+          }
+		
+        }
+        selectedDot = null;
+      }
+    }
+
+    function checkCompletedBox(dotA,dotB,player){
+      let completed=false;
+      for(let row=0; row<gridSize-1; row++){
+        for(let col=0; col<gridSize-1; col++){
+          let topLeft=dots[row*gridSize+col];
+          let topRight=dots[row*gridSize+col+1];
+          let bottomLeft=dots[(row+1)*gridSize+col];
+          let bottomRight=dots[(row+1)*gridSize+col+1];
+
+          let edges=[[topLeft,topRight],[topRight,bottomRight],[bottomRight,bottomLeft],[bottomLeft,topLeft]];
+          if(edges.every(e=>lines.some(l=>(l.start===e[0]&&l.end===e[1])||(l.start===e[1]&&l.end===e[0])))){
+            let alreadyClaimed = boxes.some(b=>b.cx==(topLeft.x+bottomRight.x)/2 && b.cy==(topLeft.y+bottomRight.y)/2);
+            if(!alreadyClaimed){
+              boxes.push({cx:(topLeft.x+bottomRight.x)/2, cy:(topLeft.y+bottomRight.y)/2, player});
+              completed=true;
+            }
+          }
+        }
+      }
+      return completed;
+    }
+
+    function checkGameOver(){
+      if(boxes.length===(gridSize-1)*(gridSize-1)){
+        gameOver=true;
+        let score1=boxes.filter(b=>b.player===1).length;
+        let score2=boxes.filter(b=>b.player===2).length;
+        if(score1>score2) statusText.textContent="🎉 Player 1 Wins!";
+        else if(score2>score1) statusText.textContent=aiMode?"🤖 AI Wins!":"🎉 Player 2 Wins!";
+        else statusText.textContent="🤝 Draw!";
+      }
+    }
+function aiMove(){
+  let madeMove = false;
+
+  // AI tries to complete a box first
+  for(let i=0; i<dots.length; i++){
+    for(let j=i+1; j<dots.length; j++){
+      let d1 = dots[i], d2 = dots[j];
+      let dx = Math.abs(d1.x - d2.x), dy = Math.abs(d1.y - d2.y);
+
+      if(!((dx===spacing && dy===0) || (dx===0 && dy===spacing))) continue;
+
+      let exists = lines.some(l => 
+        (l.start===d1 && l.end===d2) || (l.start===d2 && l.end===d1)
+      );
+      if(exists) continue;
+
+      // လိုင်းဆွဲကြည့်
+      lines.push({ start:d1, end:d2, player:2 });
+      let completed = checkCompletedBox(d1, d2, 2);
+
+      if(completed){
+        // Box ရသွားလို့ AI ဆက်လုပ်ခွင့်ရမယ်
+        statusText.textContent = currentPlayerText();
+        drawBoard();
+        checkGameOver();
+
+        if(!gameOver){
+          setTimeout(aiMove, 500);  // AI ဆက်လုပ်
+        }
+        return;
+      } else {
+        // မရရင် undo
+        lines.pop();
+      }
+    }
+  }
+
+  // no box completion possible → pick random line
+  let possible = [];
+  for(let i=0; i<dots.length; i++){
+    for(let j=i+1; j<dots.length; j++){
+      let d1 = dots[i], d2 = dots[j];
+      let dx = Math.abs(d1.x - d2.x), dy = Math.abs(d1.y - d2.y);
+
+      if(!((dx===spacing && dy===0) || (dx===0 && dy===spacing))) continue;
+
+      let exists = lines.some(l => 
+        (l.start===d1 && l.end===d2) || (l.start===d2 && l.end===d1)
+      );
+      if(!exists) possible.push([d1,d2]);
+    }
+  }
+
+  if(possible.length > 0){
+    let move = possible[Math.floor(Math.random() * possible.length)];
+    lines.push({ start:move[0], end:move[1], player:2 });
+
+    let completed = checkCompletedBox(move[0], move[1], 2);
+
+    if(completed){
+      // random move တင် box ရသွားလည်း AI ဆက်လုပ်
+      statusText.textContent = currentPlayerText();
+      drawBoard();
+      checkGameOver();
+
+      if(!gameOver){
+        setTimeout(aiMove, 500);
+      }
+      return;
+    }
+  }
+
+  // မရရင် player ကို turn ပေး
+  currentPlayer = 1;
+  statusText.textContent = currentPlayerText();
+  drawBoard();
+  checkGameOver();
+}
+    
+    function resetGame(){ initGame(); }
+    function goHome(){ window.location.href="dabHome.html"; }
+
+    canvas.addEventListener("click", handleClick);
+    initGame();
+  </script>
+</body>
+</html>
+			

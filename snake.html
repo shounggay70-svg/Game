@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Snake Game - Auto Move</title>
+  <style>
+    body {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+	   background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+      font-family: Arial, sans-serif;
+      color: white;
+    }
+	h1{
+	  margin-bottom: 15px;
+      font-size: 2.8rem;
+      letter-spacing: 2px;
+      text-shadow: 0 0 20px #00fff2, 0 0 30px #ff00d4;
+      animation: glowText 2s infinite alternate;
+    }
+    canvas {
+      border: 2px solid white;
+      background: #f5f5f5;
+    }
+    #score {
+      font-size: 1.5rem;
+      margin: 10px;
+    }
+    button {
+      margin: 5px;
+      padding: 10px 20px;
+      font-size: 1rem;
+      border: none;
+      border-radius: 8px;
+      color: white;
+      cursor: pointer;
+      transition: transform 0.2s;
+      background: linear-gradient(45deg, #ff00cc, #333399);
+      margin-top: 10px;
+      box-shadow: 0 0 15px rgba(255,0,204,0.6);
+    }
+    button:hover {
+	  transform: scale(1.1);
+	  box-shadow: 0 0 25px #00fff2, 0 0 35px #ff00d4; 
+    }
+    .small-btn {
+      padding: 10px;
+      width: 60px;
+    }
+    #gameOver {
+      display: none;
+      font-size: 1.5rem;
+      margin-top: 10px;
+      color: yellow;
+    }
+  </style>
+</head>
+<body>
+  <h1>🐍 Snake Game</h1>
+  <div id="score">Score: 0</div>
+  <canvas id="gameCanvas" width="600" height="500"></canvas>
+  
+  <div id="gameOver">
+    Game Over! 
+    <button onclick="restartGame()">Restart</button>
+  </div>
+
+  <!-- Mobile Controls -->
+  <div id="controls">
+    <div>
+      <button class="small-btn" onclick="changeDirection('UP')">⬆️</button>
+      <button class="small-btn" onclick="changeDirection('LEFT')">⬅️</button>
+      <button class="small-btn" onclick="changeDirection('DOWN')">⬇️</button>
+      <button class="small-btn" onclick="changeDirection('RIGHT')">➡️</button>
+	  <button onclick="toggleGrid()">🧩 Grid ON / OFF</button>
+    </div>
+  </div>
+
+  <button onclick="location.href='snakeHome.html'">🏠 Back to Home</button>
+  
+  <script>
+    const canvas = document.getElementById("gameCanvas");
+    const ctx = canvas.getContext("2d");
+    const box = 20;
+	 let showGrid=true;
+
+    let snake, food, score, direction, gameInterval;
+    let gameOver = false;
+
+    function initGame() {
+      snake = [{x: 9 * box, y: 10 * box}]; 
+      score = 0;
+      direction = "RIGHT"; // default start
+      gameOver = false;
+      document.getElementById("score").innerText = "Score: " + score;
+      document.getElementById("gameOver").style.display = "none";
+      generateFood();
+
+      if (gameInterval) clearInterval(gameInterval);
+      gameInterval = setInterval(moveSnake, 250); // auto move every 150ms
+      drawGame();
+    }
+
+    function generateFood() {
+      food = {
+        x: Math.floor(Math.random() * 20) * box,
+        y: Math.floor(Math.random() * 20) * box
+      };
+    }
+
+    function drawCircle(x, y, color) {
+      ctx.beginPath();
+      ctx.arc(x + box / 2, y + box / 2, box / 2, 0, Math.PI * 2);
+      ctx.fillStyle = color;
+      ctx.fill();
+      ctx.closePath();
+    }
+	function drawSnakeHead(x, y) {
+  // Head
+  drawCircle(x, y, "#00bcd4");
+
+  ctx.fillStyle = "white";
+
+  let eyeOffsetX = box / 4;
+  let eyeOffsetY = box / 4;
+  let eyeRadius = box / 10;
+
+  // Direction အလိုက် မျက်လုံးနေရာပြောင်း
+  let leftEyeX = x + box / 2 - eyeOffsetX;
+  let rightEyeX = x + box / 2 + eyeOffsetX;
+  let eyeY = y + box / 2 - eyeOffsetY;
+
+  if (direction === "UP") {
+    eyeY = y + box / 4;
+  } else if (direction === "DOWN") {
+    eyeY = y + box * 0.65;
+  } else if (direction === "LEFT") {
+    leftEyeX = x + box / 4;
+    rightEyeX = x + box / 4;
+  } else if (direction === "RIGHT") {
+    leftEyeX = x + box * 0.75;
+    rightEyeX = x + box * 0.75;
+  }
+
+  // Left eye
+  ctx.beginPath();
+  ctx.arc(leftEyeX, eyeY, eyeRadius, 0, Math.PI * 2);
+  ctx.fill();
+
+  // Right eye
+  ctx.beginPath();
+  ctx.arc(rightEyeX, eyeY, eyeRadius, 0, Math.PI * 2);
+  ctx.fill();
+}
+	function drawGrid() {
+  ctx.strokeStyle = "#ddd";   // grid line color
+  ctx.lineWidth = 1;
+
+  // Vertical lines
+  for (let x = 0; x <= canvas.width; x += box) {
+    ctx.beginPath();
+    ctx.moveTo(x, 0);
+    ctx.lineTo(x, canvas.height);
+    ctx.stroke();
+  }
+
+  // Horizontal lines
+  for (let y = 0; y <= canvas.height; y += box) {
+    ctx.beginPath();
+    ctx.moveTo(0, y);
+    ctx.lineTo(canvas.width, y);
+    ctx.stroke();
+  }
+}
+function drawGrid() {
+  ctx.strokeStyle = "#ddd";
+  ctx.lineWidth = 1;
+
+  for (let x = 0; x <= canvas.width; x += box) {
+    ctx.beginPath();
+    ctx.moveTo(x, 0);
+    ctx.lineTo(x, canvas.height);
+    ctx.stroke();
+  }
+
+  for (let y = 0; y <= canvas.height; y += box) {
+    ctx.beginPath();
+    ctx.moveTo(0, y);
+    ctx.lineTo(canvas.width, y);
+    ctx.stroke();
+  }
+}
+
+   /* function drawGame() {
+      ctx.fillStyle = "#f5f5f5";
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+		drawGrid();
+      // Draw snake
+      for (let i = 0; i < snake.length; i++) {
+        drawCircle(snake[i].x, snake[i].y, "black");
+      }
+
+      // Draw food
+      drawCircle(food.x, food.y, "red");
+    }*/
+	
+	function drawGame() {
+  ctx.fillStyle = "#f5f5f5";
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+  if (showGrid) {
+    drawGrid(); // GRID ON / OFF
+  }
+
+  for (let i = 0; i < snake.length; i++) {
+    if (i === 0) {
+      // 🐍 HEAD
+      drawSnakeHead(snake[i].x, snake[i].y);
+    } else {
+      // BODY
+      drawCircle(snake[i].x, snake[i].y, "black");
+    }
+  }
+
+  drawCircle(food.x, food.y, "red");
+}
+
+    function moveSnake() {
+      if (gameOver) return;
+
+      let headX = snake[0].x;
+      let headY = snake[0].y;
+
+      if (direction === "UP") headY -= box;
+      else if (direction === "DOWN") headY += box;
+      else if (direction === "LEFT") headX -= box;
+      else if (direction === "RIGHT") headX += box;
+
+      // Collision check
+      if (
+        headX < 0 || headY < 0 ||
+        headX >= canvas.width ||  headY >= canvas.height ||
+        snake.some(part => part.x === headX && part.y === headY)
+      ) {
+        gameOver = true;
+        clearInterval(gameInterval);
+        document.getElementById("gameOver").style.display = "block";
+        return;
+      }
+
+      let newHead = {x: headX, y: headY};
+      snake.unshift(newHead);
+
+      // Eat food
+      if (headX === food.x && headY === food.y) {
+        score++;
+        document.getElementById("score").innerText = "Score: " + score;
+        generateFood();
+      } else {
+        snake.pop();
+      }
+	  drawGame();
+    }
+
+    function restartGame() {
+      initGame();
+    }
+	function toggleGrid() {
+  showGrid = !showGrid;
+}
+
+    // ✅ Change direction (prevent reverse instantly)
+    function changeDirection(newDir) {
+      if (
+        (newDir === "UP" && direction !== "DOWN") ||
+        (newDir === "DOWN" && direction !== "UP") ||
+        (newDir === "LEFT" && direction !== "RIGHT") ||
+        (newDir === "RIGHT" && direction !== "LEFT")
+      ) {
+        direction = newDir;
+      }
+    }
+
+    // ✅ Keyboard controls for Laptop
+    document.addEventListener("keydown", function(event) {
+      if (event.key === "ArrowUp") changeDirection("UP");
+      else if (event.key === "ArrowDown") changeDirection("DOWN");
+      else if (event.key === "ArrowLeft") changeDirection("LEFT");
+      else if (event.key === "ArrowRight") changeDirection("RIGHT");
+    });
+
+    initGame();
+  </script>
+</body>
+</html>

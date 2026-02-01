@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Balloon Escape Game</title>
+<style>
+body { margin:0; padding:0; background: linear-gradient(to top, #87CEEB, #ffffff); overflow:hidden; font-family:Arial,sans-serif; }
+#gameArea { width:100vw; height:100vh; position:relative; overflow:hidden; }
+#balloon { width:60px; height:80px; background:red; border-radius:50%; position:absolute;z-index:2; }
+.spike { width:30px; height:30px; background:black; clip-path: polygon(50% 0%, 0% 100%, 100% 100%); position:absolute; top:-40px;z-index:2; }
+#scoreBoard { position:absolute; top:10px; left:10px; font-size:20px; font-weight:bold; }
+#gameOver { position:absolute; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); display:flex; justify-content:center; align-items:center; color:white; font-size:40px; font-weight:bold; text-align:center; display:none; flex-direction: column; padding:20px; box-sizing:border-box; border-radius:20px; }
+#gameControls { position:absolute; bottom:20px; width:100%; text-align:center; }
+#gameControls button {
+    padding:10px 20px;
+    font-size:18px;
+    cursor:pointer;
+    margin:5px;
+    border:none;
+    border-radius:30px;
+    background: linear-gradient(45deg, #ff00cc, #333399);
+    color:white;
+    box-shadow:0 0 15px rgba(255,0,204,0.6);
+    transition:0.3s;
+	position:relative;
+	z-index:2; 
+}
+#gameControls button:hover {
+    transform: scale(1.1);
+    box-shadow: 0 0 25px #00fff2, 0 0 35px #ff00d4;
+}
+#controls { position:absolute; bottom:80px; width:100%; text-align:center; }
+#controls button {
+    padding:10px 20px; 
+    font-size:18px; 
+    cursor:pointer;
+    margin:5px;
+    border: none;
+    border-radius: 30px;
+    background: linear-gradient(45deg, #ff00cc, #333399);
+    color: white;
+    box-shadow: 0 0 15px rgba(255,0,204,0.6);
+    transition: 0.3s;  
+	position:relative;
+	z-index:2;
+}
+#controls button:hover { transform: scale(1.1); box-shadow: 0 0 25px #00fff2, 0 0 35px #ff00d4; }
+.cloud {
+  position: absolute;
+  width: 120px;
+  height: 60px;
+  background: white;
+  border-radius: 50px;
+  opacity: 0.8;
+  z-index:0;
+}
+.cloud::before,
+.cloud::after {
+  content: "";
+  position: absolute;
+  background: white;
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  top: -30px;
+}
+.cloud::before {
+  left: 15px;
+}
+.cloud::after {
+  right: 15px;
+}
+.bird {
+  position: absolute;
+  width: 50px;
+  height: 40px;
+  z-index: 2; /* Balloon / Spike နဲ့ ပေါ်အောင် */
+}
+.bird svg {
+  width: 100%;
+  height: 100%;
+  filter: drop-shadow(2px 2px 2px rgba(0,0,0,0.4));
+}
+
+@keyframes flap {
+  0% { transform: rotate(0deg); }
+  50% { transform: rotate(15deg); }
+  100% { transform: rotate(0deg); }
+}
+
+.bird .wing-left {
+  transform-origin: right center;
+  animation: flap 0.5s infinite;
+}
+
+.bird .wing-right {
+  transform-origin: left center;
+  animation: flap 0.5s infinite;
+}
+</style>
+</head>
+<body>
+
+<div id="gameArea">
+  <div id="balloon"></div>
+  <div id="scoreBoard">
+    <div id="score">Score: 0</div>
+    <div id="bestScore">Best Score: 0</div>
+  </div>
+
+  <!-- Game Over overlay -->
+  <div id="gameOver"></div>
+
+  <!-- Mobile on-screen controls -->
+  <div id="controls">
+    <button onclick="moveBalloon('left')">◀️</button>
+    <button onclick="moveBalloon('up')">▲</button>
+    <button onclick="moveBalloon('down')">▼</button>
+    <button onclick="moveBalloon('right')">▶️</button>
+  </div>
+
+  <!-- Always visible game control buttons -->
+  <div id="gameControls">
+    <button onclick="restartGame()">Restart</button>
+    <button onclick="goHome()">Back Home</button>
+  </div>
+</div>
+
+<script>
+const balloon = document.getElementById("balloon");
+const gameOverDisplay = document.getElementById("gameOver");
+const scoreDisplay = document.getElementById("score");
+const bestScoreDisplay = document.getElementById("bestScore");
+
+let balloonX = window.innerWidth/2 - 30;
+let balloonY = window.innerHeight/2 - 40;
+let score = 0;
+let bestScore = 0;
+let spikes = [];
+let clouds =[];
+let birds =[];
+let gameInterval;
+let spikeInterval;
+let gameOver = false;
+
+function updateBalloonPosition(){
+  balloon.style.left = balloonX + "px";
+  balloon.style.top = balloonY + "px";
+}
+
+// Arrow Keys for desktop
+document.addEventListener("keydown", (e)=>{
+  if(gameOver) return;
+  const step = 20;
+  if(e.key === "ArrowLeft" && balloonX>0) balloonX -= step;
+  if(e.key === "ArrowRight" && balloonX<window.innerWidth-60) balloonX += step;
+  if(e.key === "ArrowUp" && balloonY>0) balloonY -= step;
+  if(e.key === "ArrowDown" && balloonY<window.innerHeight-80) balloonY += step;
+  updateBalloonPosition();
+});
+
+// On-screen buttons for mobile
+function moveBalloon(direction){
+  const step = 20;
+  if(gameOver) return;
+  if(direction==='left' && balloonX>0) balloonX -= step;
+  if(direction==='right' && balloonX<window.innerWidth-60) balloonX += step;
+  if(direction==='up' && balloonY>0) balloonY -= step;
+  if(direction==='down' && balloonY<window.innerHeight-80) balloonY += step;
+  updateBalloonPosition();
+}
+// Create cloud
+function createCloud(){
+  const cloud = document.createElement("div");
+  cloud.classList.add("cloud");
+  cloud.style.left = Math.random() * (window.innerWidth - 120) + "px";
+  cloud.style.top = "-80px";
+  gameArea.appendChild(cloud);
+  clouds.push(cloud);
+}
+function createBird(){
+  if(gameOver) return;
+
+  const birdDiv = document.createElement("div");
+  birdDiv.classList.add("bird");
+
+  const startX = Math.random() * (window.innerWidth - 50);
+  birdDiv.style.left = startX + "px";
+  birdDiv.style.top = "-50px";
+
+  // SVG bird
+  birdDiv.innerHTML = `
+    <svg viewBox="0 0 64 64">
+      <defs>
+        <linearGradient id="birdGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+          <stop offset="0%" stop-color="#FFA500"/>
+          <stop offset="100%" stop-color="#FFCC00"/>
+        </linearGradient>
+      </defs>
+      <!-- Body -->
+      <circle cx="32" cy="32" r="16" fill="url(#birdGrad)" />
+      <!-- Left Wing -->
+      <polygon class="wing-left" points="16,32 0,24 0,40" fill="#FF9900"/>
+      <!-- Right Wing -->
+      <polygon class="wing-right" points="48,32 64,24 64,40" fill="#FF9900"/>
+      <!-- Beak -->
+      <polygon points="48,32 56,28 56,36" fill="#FFD700"/>
+      <!-- Eye -->
+      <circle cx="28" cy="28" r="3" fill="#000"/>
+    </svg>`;
+
+  gameArea.appendChild(birdDiv);
+
+  // Random horizontal direction and speed
+  const direction = Math.random() < 0.5 ? 1 : -1; // left or right
+  const speed = 2 + Math.random() * 2; // 2-4px per frame
+
+  birds.push({ element: birdDiv, direction, speed });
+}
+// Create spikes
+function createSpike(){
+  if(gameOver) return;
+  const spike = document.createElement("div");
+  spike.classList.add("spike");
+  spike.style.left = Math.random()*(window.innerWidth-30)+"px";
+  spike.style.top = "-40px";
+  gameArea.appendChild(spike);
+  spikes.push(spike);
+}
+
+// Update game
+function updateGame(){
+  score++;
+  scoreDisplay.textContent = "Score: " + score;
+
+  spikes.forEach((spike,index)=>{
+    let top = parseInt(spike.style.top || -40);
+    top += 5;
+    spike.style.top = top+"px";
+
+    let balloonRect = balloon.getBoundingClientRect();
+    let spikeRect = spike.getBoundingClientRect();
+
+    // Collision
+    if(spikeRect.left < balloonRect.right &&
+       spikeRect.right > balloonRect.left &&
+       spikeRect.top < balloonRect.bottom &&
+       spikeRect.bottom > balloonRect.top){
+      endGame();
+    }
+    // Remove offscreen spikes
+    if(top>window.innerHeight){
+      spike.remove();
+      spikes.splice(index,1);
+    }
+  });
+  // Clouds appear when score >= 100
+if(score % 100 === 0){
+  createCloud();
+}
+
+// Move clouds
+clouds.forEach((cloud, index)=>{
+  let top = parseInt(cloud.style.top || -80);
+  top += 2;
+  cloud.style.top = top + "px";
+
+  if(top > window.innerHeight){
+    cloud.remove();
+    clouds.splice(index,1);
+  }
+});
+// Bird appear every 200 score
+if(score % 200 === 0){
+  createBird();
+}
+
+// Move birds
+birds.forEach((birdObj, index)=>{
+  let bird = birdObj.element;
+  let top = parseInt(bird.style.top || -50);
+  top += 4; // vertical speed
+  bird.style.top = top + "px";
+
+  // Zigzag horizontal movement
+  let left = parseInt(bird.style.left || 0);
+  left += birdObj.speed * birdObj.direction;
+  // Change direction if hitting edge
+  if(left <= 0) birdObj.direction = 1;
+  if(left >= window.innerWidth - 50) birdObj.direction = -1;
+  bird.style.left = left + "px";
+
+  let balloonRect = balloon.getBoundingClientRect();
+  let birdRect = bird.getBoundingClientRect();
+
+  if(
+    birdRect.left < balloonRect.right &&
+    birdRect.right > balloonRect.left &&
+    birdRect.top < balloonRect.bottom &&
+    birdRect.bottom > balloonRect.top
+  ){
+    endGame();
+  }
+
+  if(top > window.innerHeight){
+    bird.remove();
+    birds.splice(index,1);
+  }
+});
+}
+
+// Start game
+function startGame(){
+  score = 0;
+  scoreDisplay.textContent="Score: 0";
+  gameOver=false;
+  gameOverDisplay.style.display="none";
+  balloonX = window.innerWidth/2 - 30;
+  balloonY = window.innerHeight/2 - 40;
+  updateBalloonPosition();
+  spikes.forEach(s=>s.remove());
+  spikes=[];
+  clouds.forEach(c => c.remove());
+  clouds = [];
+  birds.forEach(b => b.element.remove());
+  birds=[];
+  gameInterval = setInterval(updateGame,30);
+  spikeInterval = setInterval(createSpike,1500);
+}
+
+// End game
+function endGame(){
+  gameOver=true;
+  clearInterval(gameInterval);
+  clearInterval(spikeInterval);
+
+  if(score > bestScore){
+    bestScore = score;
+  }
+  bestScoreDisplay.textContent = "Best Score: " + bestScore;
+
+  // Show Game Over overlay
+  gameOverDisplay.style.display = "flex";
+  gameOverDisplay.innerHTML = `Game Over<br>Score: ${score}<br>Best Score: ${bestScore}`;
+}
+
+// Restart game
+function restartGame(){
+  startGame();
+}
+
+// Back Home
+function goHome(){
+  window.location.href = "balloonHome.html"; 
+}
+
+// Auto start
+window.onload = startGame;
+</script>
+</body>
+</html>

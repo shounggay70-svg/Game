@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Special Food Game - Level Up Sound</title>
+    <style>
+        body { margin: 0; overflow: hidden; background: #a2d149; font-family: 'Arial', sans-serif; }
+        #game-container { position: relative; width: 100vw; height: 100vh; background: #87ceeb; overflow: hidden; }
+        canvas { display: block; }
+        
+        #ui { 
+            position: absolute; top: 20px; left: 20px; color: #fff; 
+            text-shadow: 2px 2px 4px #000; pointer-events: none; width: 95%;
+            display: flex; justify-content: flex-start; align-items: center; gap: 25px;
+        }
+        #stats { display: flex; gap: 20px; align-items: center; }
+
+        .back-btn {
+            pointer-events: auto;
+            padding: 8px 18px; background: #e74c3c; color: white;
+            border: 2px solid #fff; border-radius: 10px; cursor: pointer;
+            font-weight: bold; font-size: 16px; transition: 0.3s;
+        }
+        .back-btn:hover { background: #c0392b; transform: scale(1.05); }
+        
+        #char-select, #overlay {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.85); display: flex;
+            flex-direction: column; justify-content: center; align-items: center;
+            color: white; text-align: center; z-index: 10;
+        }
+        .char-options { display: flex; gap: 15px; margin-top: 20px; flex-wrap: wrap; justify-content: center; }
+        .char-card { 
+            background: #fff; border: 4px solid #e67e22; border-radius: 15px; 
+            cursor: pointer; padding: 15px; transition: 0.2s; color: #333;
+        }
+        .char-card:hover { transform: scale(1.1); background: #f1c40f; }
+        .char-emoji { font-size: 50px; }
+        
+        button.action-btn {
+            padding: 12px 30px; font-size: 22px; cursor: pointer;
+            background: #27ae60; border: none; color: white; border-radius: 50px;
+            margin-top: 20px;
+        }
+
+        /* ပေါင်းထည့်ထားသော Back to Home button style */
+        .home-btn {
+            margin-top: 40px;
+            padding: 12px 40px;
+            background: linear-gradient(to right, #ff00d4, #ff4e50);
+            color: white;
+            border: none;
+            border-radius: 50px;
+            font-weight: bold;
+            font-size: 18px;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(255, 0, 212, 0.4);
+            transition: 0.3s;
+        }
+        .home-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 20px #ff00d4;
+        }
+    </style>
+</head>
+<body>
+
+<div id="game-container">
+    <div id="char-select">
+        <h1>Choose the food and characters</h1>
+        <div class="char-options">
+            <div class="char-card" onclick="startGame('🦫', '🥒')">
+                <span class="char-emoji">🦫</span><br>🥒
+            </div>
+            <div class="char-card" onclick="startGame('🐱', '🐟')">
+                <span class="char-emoji">🐱</span><br>🐟
+            </div>
+            <div class="char-card" onclick="startGame('🐶', '🦴')">
+                <span class="char-emoji">🐶</span><br>🦴
+            </div>
+            <div class="char-card" onclick="startGame('🐰', '🥕')">
+                <span class="char-emoji">🐰</span><br>🥕
+            </div>
+        </div>
+
+        <button class="home-btn" onclick="window.location.href='more.html'">
+            〈 BACK TO Game
+        </button>
+    </div>
+
+    <div id="ui" style="display:none;">
+        <div id="stats">
+            <h2 id="scoreDisplay">Score: 0</h2>
+            <h2 id="livesDisplay">❤️ ❤️ ❤️</h2>
+            <h2 id="levelText">Level: 1</h2>
+        </div>
+<button class="back-btn" onclick="backToMenu()">Exit</button>
+    </div>
+    
+    <div id="overlay" style="display:none;">
+        <h1>GAME OVER! 💀</h1>
+        <p id="finalScore" style="font-size: 24px;"></p>
+        <button class="action-btn" onclick="backToMenu()">make a new selection</button>
+    </div>
+
+    <canvas id="gameCanvas"></canvas>
+</div>
+
+<script>
+    const canvas = document.getElementById("gameCanvas");
+    const ctx = canvas.getContext("2d");
+    const ui = document.getElementById("ui");
+    const charSelect = document.getElementById("char-select");
+    const overlay = document.getElementById("overlay");
+
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+
+    let score, level, lives, gameActive, items, baseSpeed, spawnRate;
+    let selectedChar, favoriteFood;
+    const scorePerLevel = 100;
+const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+function playSound(freq, type = 'sine', duration = 0.1, startTime = 0) {
+        if (audioCtx.state === 'suspended') audioCtx.resume();
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = type;
+        osc.frequency.setValueAtTime(freq, audioCtx.currentTime + startTime);
+        gain.gain.setValueAtTime(0.1, audioCtx.currentTime + startTime);
+        gain.gain.linearRampToValueAtTime(0, audioCtx.currentTime + startTime + duration);
+        osc.connect(gain); gain.connect(audioCtx.destination);
+        osc.start(audioCtx.currentTime + startTime); 
+        osc.stop(audioCtx.currentTime + startTime + duration);
+    }
+
+    
+    function playLevelUpSound() {
+        playSound(523.25, 'square', 0.2); // C5 note
+        playSound(659.25, 'square', 0.2, 0.1); 
+        playSound(783.99, 'square', 0.3, 0.2); 
+    }
+
+    const player = { x: canvas.width / 2, y: canvas.height - 130, width: 90, height: 90 };
+
+    function resetGameState() {
+        score = 0; level = 1; lives = 3; items = [];
+        baseSpeed = 4; spawnRate = 0.03;
+        document.getElementById("scoreDisplay").innerText = "Score: 0";
+        document.getElementById("levelText").innerText = "Level: 1";
+        document.getElementById("livesDisplay").innerText = "❤️ ❤️ ❤️";
+    }
+
+    function startGame(char, food) {
+        resetGameState();
+        selectedChar = char; favoriteFood = food;
+        charSelect.style.display = "none"; overlay.style.display = "none";
+        ui.style.display = "flex"; gameActive = true;
+        animate();
+    }
+
+    function backToMenu() {
+        gameActive = false; ui.style.display = "none";
+        overlay.style.display = "none"; charSelect.style.display = "flex";
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+    }
+
+    function createItem() {
+        if (!gameActive) return;
+        const x = Math.random() * (canvas.width - 60);
+        const isBomb = Math.random() < (0.15 + (level * 0.03));
+        items.push({
+            x: x, y: -60, 
+            speed: baseSpeed + (Math.random() * level), 
+            type: isBomb ? "💣" : favoriteFood, 
+            isBomb: isBomb
+        });
+    }
+
+    window.addEventListener("mousemove", (e) => player.x = e.clientX - player.width / 2);
+    window.addEventListener("touchmove", (e) => {
+        player.x = e.touches[0].clientX - player.width / 2;
+        e.preventDefault();
+    }, {passive: false});
+
+    function update() {
+        if (!gameActive) return;
+        if (Math.random() < (spawnRate + (level * 0.005))) createItem();
+
+        items.forEach((item, index) => {
+            item.y += item.speed;
+            if (item.y + 30 > player.y && item.x + 60 > player.x && item.x < player.x + player.width) {
+                if (item.isBomb) {
+                    playSound(150, 'sawtooth', 0.3);
+                    lives--;
+document.getElementById("livesDisplay").innerText = "❤️ ".repeat(lives);
+                    items.splice(index, 1);
+                    if (lives <= 0) gameOver();
+                } else {
+                    playSound(600 + (score % 400), 'sine', 0.1);
+                    score += 10;
+                    document.getElementById("scoreDisplay").innerText = "Score: " + score;
+                    items.splice(index, 1);
+// Level Up Logic
+                    let nextLevel = Math.floor(score / scorePerLevel) + 1;
+                    if (nextLevel > level) {
+                        level = nextLevel;
+                        baseSpeed += 1.2;
+                        document.getElementById("levelText").innerText = "Level: " + level;
+                        playLevelUpSound(); 
+                    }
+                }
+            }
+            if (item.y > canvas.height) items.splice(index, 1);
+        });
+    }
+function animate() {
+        if (!gameActive) return;
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.font = "80px Arial";
+        ctx.fillText(selectedChar, player.x, player.y + 70);
+        items.forEach(item => {
+            ctx.font = "50px Arial";
+            ctx.fillText(item.type, item.x, item.y);
+        });
+        update();
+        requestAnimationFrame(animate);
+    }
+
+    function gameOver() {
+        gameActive = false;
+        overlay.style.display = "flex";
+        document.getElementById("finalScore").innerText = "Final Score: " + score;
+    }
+</script>
+</body>
+</html>

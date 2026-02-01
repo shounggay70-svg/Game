@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>Neon Memory Match Game</title>
+
+<style>
+body {
+  margin: 0;
+  min-height: 100vh;
+  background:linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif;
+  color: white;
+}
+
+.game-container {
+  width: 360px;
+  background: #111133;
+  padding: 20px;
+  border-radius: 15px;
+  box-shadow:0 0 25px #00fff2, 0 0 35px #ff00d4; 
+}
+
+h1 {
+  text-align: center;
+}
+
+#level, #timer {
+  text-align: center;
+  margin-bottom: 8px;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+}
+
+.card {
+  width: 70px;
+  height: 90px;
+  background: #222244;
+  border-radius: 12px;
+  cursor: pointer;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 40px;
+  color: transparent;
+}
+
+.card.flipped {
+  color: #0ff;
+  background: #004466;
+}
+
+.card.matched {
+  background: #00ffaa;
+  color: #002211;
+}
+
+.back-btn {
+  margin-top: 15px;
+  padding: 8px 18px;
+  border-radius: 25px;
+font-size:16px;
+  border:none;
+  background:linear-gradient(45deg, #ff416c, #ff4b2b);
+  color:#002222;
+  cursor: pointer;
+box-shadow:0 0 15px #ff4b2b;
+transition: transform 0.2s, box-shadow 0.2s;
+}
+.back-btn:hover{
+          transform: scale(1.1);
+	  box-shadow: 0 0 25px #00fff2, 0 0 35px #ff00d4; 
+    }
+
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, .7);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 10;
+}
+
+.hidden {
+  display: none;
+}
+
+.result-content {
+  background:#111133;
+  padding: 30px;
+  border-radius: 20px;
+  text-align: center;
+  box-shadow0 0 25px #00fff2, 0 0 35px #ff00d4; 
+}
+
+.result-content button {
+  margin: 8px;
+  padding: 10px 25px;
+  border-radius: 25px;
+  border: none;
+  background: linear-gradient(45deg, #ff416c, #ff4b2b);;
+  color: #002222;
+  font-size: 16px;
+  cursor: pointer;
+  box-shadow: 0 0 25px #00fff2, 0 0 35px #ff00d4; 
+}
+.restart-btn {
+  padding: 8px 18px;
+  font-size: 16px;
+  border: none;
+  border-radius: 25px;
+  background: linear-gradient(45deg, #ff416c, #ff4b2b);
+  color:#002222;
+  cursor: pointer;
+  box-shadow:0 0 15px rgba(255,0,204,0.6);
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.restart-btn:hover {
+  transform: scale(1.1);
+  box-shadow:0 0 25px #00fff2, 0 0 35px #ff00d4; 
+   
+}
+#nextBtn {
+    padding: 12px 30px;
+    font-size: 18px;
+    border: none;
+    border-radius: 25px;
+    background:  linear-gradient(45deg, #ff416c, #ff4b2b);
+    color: #002222;
+    cursor: pointer;
+    box-shadow:0 0 15px rgba(255,0,204,0.6);
+    transition: transform 0.2s, box-shadow 0.2s;
+  }
+
+  #nextBtn:hover {
+    transform: scale(1.1);
+    box-shadow: 0 0 25px #00fff2, 0 0 35px #ff00d4;
+  }
+<style>
+  /* Restart button (ပုံမှန်) */
+  #restartBtn {
+    padding: 12px 30px;
+    font-size: 18px;
+    border: none;
+    border-radius: 25px;
+    background: linear-gradient(45deg, #ff416c, #ff4b2b);
+    color:#002222;
+    cursor: pointer;
+    box-shadow:0 0 15px rgba(255,0,204,0.6);
+    transition: transform 0.2s, box-shadow 0.2s,background 0.2s;
+    display: none; /* GAME OVER မတိုင်ခင် မပေါ် */
+  }
+
+  /* Hover effect */
+  #restartBtn:hover {
+    transform: scale(1.1);
+    box-shadow : 0 0 25px #00fff2, 0 0 35px #ff00d4;
+  
+}
+</style>
+</style>
+</head>
+
+<body>
+
+<div class="game-container">
+  <h1>🎆 Neon Memory</h1>
+  <div id="level">Level: 1</div>
+  <div id="timer">⏱️ Time: 30s</div>
+  <div class="grid" id="grid"></div>
+
+  <div style="text-align:center;">
+    <button class="back-btn" onclick="location.href='fruithome.html'">Back Home</button>
+<button class="restart-btn" onclick="restartGame()">Restart</button>
+  </div>
+</div>
+
+<div id="resultBox" class="overlay hidden">
+  <div class="result-content">
+    <h2 id="resultText"></h2>
+    <button id="nextBtn" onclick="nextLevel()">Next Level</button>
+    <button id="restartBtn" onclick="restartGame()">Restart</button>
+  </div>
+</div>
+
+<script>
+const grid = document.getElementById("grid");
+const levelText = document.getElementById("level");
+const timerText = document.getElementById("timer");
+const resultBox = document.getElementById("resultBox");
+const resultText = document.getElementById("resultText");
+const nextBtn = document.getElementById("nextBtn");
+const restartBtn = document.getElementById("restartBtn");
+
+let level = 1, firstCard = null, secondCard = null, lockBoard = false, matchedPairs = 0;
+let timeLeft = 30, timer;
+
+const emojis = ['🍎','🍌','🍇','🍒','🍉','🥝','🍍','🥥','🍓','🍑','🍋','🍊'];
+
+function shuffle(arr) {
+  return arr.sort(() => Math.random() - 0.5);
+}
+
+function generateCards() {
+  let count = Math.min(level + 1, emojis.length);
+  return shuffle([...emojis.slice(0, count), ...emojis.slice(0, count)]);
+}
+
+function startTimer() {
+  clearInterval(timer);
+  timerText.textContent = `⏱️ Time: ${timeLeft}s`;
+  timer = setInterval(() => {
+    timeLeft--;
+    timerText.textContent = `⏱️ Time: ${timeLeft}s`;
+    if (timeLeft <= 0) {
+      clearInterval(timer);
+      showResult("GAME OVER ☹️");
+    }
+  }, 1000);
+}
+
+function createCard(emoji) {
+  const c = document.createElement("div");
+  c.className = "card";
+  c.textContent = emoji;
+
+  c.onclick = () => {
+    if (lockBoard || c.classList.contains("flipped") || c.classList.contains("matched")) return;
+    c.classList.add("flipped");
+
+    if (!firstCard) {
+      firstCard = c;
+      return;
+    }
+    secondCard = c;
+    lockBoard = true;
+
+    if (firstCard.textContent === secondCard.textContent) {
+firstCard.classList.add("matched");
+      secondCard.classList.add("matched");
+      matchedPairs++;
+      if (matchedPairs === cards.length / 2) {
+        clearInterval(timer);
+        showResult("YOU WIN 🎉");
+      }
+      resetBoard();
+    } else {
+      setTimeout(() => {
+        firstCard.classList.remove("flipped");
+        secondCard.classList.remove("flipped");
+        resetBoard();
+      }, 800);
+    }
+  };
+  return c;
+}
+
+function resetBoard() {
+  firstCard = null;
+  secondCard = null;
+  lockBoard = false;
+}
+
+let cards = [];
+
+function startGame() {
+  matchedPairs = 0;
+  resultBox.classList.add("hidden");
+  timeLeft = 30;
+  levelText.textContent = `Level: ${level}`;
+  cards = generateCards();
+  grid.innerHTML = "";
+  cards.forEach(e => grid.appendChild(createCard(e)));
+  startTimer();
+}
+
+function showResult(text) {
+  resultText.textContent = text;
+  resultBox.classList.remove("hidden");
+
+  if (text.includes("WIN")) {
+    nextBtn.style.display = "inline-block";
+    restartBtn.style.display = "none";
+  } else if (text.includes("GAME OVER")) {
+    nextBtn.style.display = "none";
+    restartBtn.style.display = "inline-block";
+  }
+}
+
+function nextLevel() {
+  resultBox.classList.add("hidden");
+  level++;
+  startGame();
+}
+
+function restartGame() {
+  level = 1;
+  resultBox.classList.add("hidden");
+  startGame();
+}
+
+startGame();
+</script>
+
+</body>
+</html>

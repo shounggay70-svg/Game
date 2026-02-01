@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Neon Memory - Home</title>
+<style>
+body {
+  margin: 0;
+  height: 100vh;
+  background: radial-gradient(circle, #1a1a40, #0f0f23);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-family: 'Segoe UI', sans-serif;
+  color: white;
+}
+
+.home {
+  text-align: center;
+  background: #111133;
+  padding: 40px;
+  border-radius: 20px;
+  box-shadow: 0 0 30px #3ff9ff;
+}
+
+h1 {
+  font-size: 36px;
+  margin-bottom: 10px;
+  text-shadow: 0 0 15px #3ff9ff;
+}
+
+p {
+  opacity: 0.9;
+  margin-bottom: 30px;
+}
+
+button {
+  padding: 15px 40px;
+  font-size: 20px;
+  border: none;
+  border-radius: 30px;
+  background: linear-gradient(45deg, #00f5ff, #00ffaa);
+  color: #002222;
+  cursor: pointer;
+  box-shadow: 0 0 20px #00f5ff;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+button:hover {
+  transform: scale(1.1);
+  box-shadow: 0 0 35px #00ffaa;
+}
+</style>
+</head>
+<body>
+
+<div class="home">
+  <h1>🎆 Neon Memory</h1>
+  <p>Test your memory before time runs out!</p>
+
+  <!-- Game Page ကို link -->
+  <button onclick="location.href='FRUIT.html'">
+    ▶ Start Game
+  </button>
+<button onclick="location.href='more.html'">
+    ▶ back
+  </button>
+</div>
+
+</body>
+</html>
