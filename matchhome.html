@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>Match 3 Game - Home</title>
+<style>
+  body {
+    margin: 0;
+    height: 100vh;
+    background: linear-gradient(135deg, #1f1f3a, #121212);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-family: 'Segoe UI', sans-serif;
+    color: white;
+  }
+
+  .container {
+    background: #1a1a2e;
+    padding: 50px 40px;
+    border-radius: 30px;
+    width: 320px;
+    box-shadow: 0 0 40px rgba(0, 255, 213, 0.3);
+    text-align: center;
+  }
+
+  .title {
+    font-size: 38px;
+    font-weight: 900;
+    margin-bottom: 40px;
+    letter-spacing: 2px;
+    color: #00ffd5;
+    text-shadow: 0 0 10px #00ffd5;
+  }
+
+  .start-btn {
+   background: linear-gradient(45deg, #00f2fe, #4facfe, #ff00d4);
+    border: none;
+    color: white;
+    font-size: 20px;
+    font-weight: 700;
+    padding: 16px 0;
+    width: 100%;
+    border-radius: 40px;
+    cursor: pointer;
+    box-shadow: 0 0 25px #ff00d4, 0 0 35px #00fff2;
+    transition: all 0.3s ease;
+    letter-spacing: 1.2px;
+  }
+
+  .start-btn:hover {
+    box-shadow: 0 12px 20px rgba(0, 255, 213, 0.7);
+    transform: translateY(-3px);
+  }
+</style>
+</head>
+<body>
+
+<div class="container">
+  <div class="title">🛒 Match 3 Items</div>
+  <button class="start-btn" onclick="startGame()">Start</button>
+</div>
+
+<script>
+  function startGame() {
+    window.location.href = "match.html";
+  }
+</script>
+
+</body>
+</html>
