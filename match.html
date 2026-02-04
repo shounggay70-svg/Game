@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Match 3 Fix</title>
+    <style>
+        body { background: #0f172a; color: white; font-family:
+		background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+		sans-serif; text-align: center; margin: 0; padding: 20px; }
+        
+        .lvl-box { font-size: 20px; font-weight: bold; color: #38bdf8; margin-bottom: 10px; }
+        
+        /* Game Grid */
+        #game-grid { 
+            display: grid; grid-template-columns: repeat(5, 1fr); 
+            gap: 10px; max-width: 350px; margin: 0 auto;
+        }
+        
+        .item { 
+            background: #1e293b; aspect-ratio: 1/1; border-radius: 10px;
+            font-size: 30px; display: flex; align-items: center; justify-content: center;
+            cursor: pointer; box-shadow: 0 0 25px #ff00d4, 0 0 35px #00fff2;
+        }
+        
+        /* Tray */
+        #tray { 
+            width: 320px; height: 70px; background: #020617; border: 2px solid #334155;
+            border-radius: 15px; margin: 20px auto; display: flex; align-items: center;
+            justify-content: center; gap: 5px;box-shadow: 0 0 25px #ff00d4, 0 0 35px #00fff2;
+        }
+        
+        .tray-slot { width: 38px; height: 38px; background: #1e293b; border-radius: 8px; 
+                     display: flex; align-items: center; justify-content: center; font-size: 20px; }
+
+        /* Popups */
+        .overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.9); display: none;
+                   flex-direction: column; align-items: center; justify-content: center; 
+				   z-index: 99; }
+        
+        .popup { background: #1e293b; padding: 30px; border-radius: 20px; border: 2px solid #38bdf8; 
+		width: 280px; }
+        
+        .btn { padding: 12px 20px; border: none; border-radius: 10px; font-weight: bold; 
+				box-shadow: 0 0 25px #ff00d4, 0 0 35px #00fff2;cursor: pointer; margin: 5px;
+						color: white; }
+	h1 {
+      font-size: 3rem;
+      letter-spacing: 2px;
+      margin-bottom: 15px;
+      text-shadow: 0 0 20px #00fff2, 0 0 30px #ff00d4;
+      animation: glow 2s infinite alternate;
+    }
+    </style>
+</head>
+<body>
+    <h1>Match 3 Fix</h1>
+    <div class="lvl-box">LEVEL: <span id="lvl">1</span></div>
+    <div style="margin-bottom: 10px;">Match <span id="target">5</span> pairs.</div>
+
+    <div id="game-grid"></div>
+
+    <p style="font-size: 12px; color: #64748b;">Winning Area (Max 7)</p>
+    <div id="tray"></div>
+
+    <div style="display: flex; flex-direction: column; align-items: center; gap: 10px;">
+        <button class="btn" style="transform: scale(1.1);background: linear-gradient(45deg, #00f2fe, #4facfe, #ff00d4);;box-shadow: 0 0 25px #ff00d4, 0 0 35px #00fff2;" onclick="useHint()">💡 HINT (<span id="hc">3</span>)</button>
+        <div style="display: flex;box-shadow: 0 0 25px #ff00d4, 0 0 35px #00fff2;">
+            <button class="btn" style="background: linear-gradient(45deg, #00f2fe, #4facfe, #ff00d4);" onclick="location.reload()">🔄 RESTART</button>
+            <button class="btn" style="background: linear-gradient(45deg, #00f2fe, #4facfe, #ff00d4);" onclick="location.href='matchhome.html'">🏠 Back</button>
+        </div>
+    </div>
+
+    <div id="popup-overlay" class="overlay">
+        <div class="popup">
+            <h2 id="pop-title">LEVEL CLEAR!</h2>
+            <p id="pop-msg">Congradulation!</p>
+            <button id="pop-btn" class="btn" style="background: #22c55e; width: 100%; height: 50px; font-size: 18px;"></button>
+        </div>
+    </div>
+
+    <script>
+        const icons = ["🍎", "🥑", "🍕", "🍣", "🎸", "🚀", "💎", "👾", "🧸", "⚽"];
+        let level = 1, tray = [], hints = 3, matches = 0, target = 5;
+
+        // ၁။ စဖွင့်ရင် Game စမယ်
+        function init() {
+            document.getElementById('popup-overlay').style.display = 'none';
+            document.getElementById('lvl').innerText = level;
+            target = 4 + level;
+            matches = 0;
+            tray = [];
+            hints = 3;
+            document.getElementById('target').innerText = target;
+            document.getElementById('hc').innerText = hints;
+            
+            updateTray();
+            
+            const grid = document.getElementById('game-grid');
+            grid.innerHTML = '';
+            for(let i=0; i<15; i++) {
+                const item = document.createElement('div');
+                item.className = 'item';
+				item.innerText = icons[Math.floor(Math.random() * icons.length)];
+                item.onclick = function() {
+                    if(tray.length < 7) {
+                        tray.push(this.innerText);
+                        // ပုံပြောင်းတဲ့အပိုင်း
+                        this.innerText = icons[Math.floor(Math.random() * icons.length)];
+                        updateTray();
+                        checkMatch();
+                    }
+                };
+                grid.appendChild(item);
+            }
+        }
+
+        function updateTray() {
+            const tDiv = document.getElementById('tray');
+            tDiv.innerHTML = '';
+            tray.forEach(ic => {
+                const s = document.createElement('div');
+                s.className = 'tray-slot';
+                s.innerText = ic;
+                tDiv.appendChild(s);
+            });
+        }
+
+        function checkMatch() {
+            let countMap = {};
+            tray.forEach(x => countMap[x] = (countMap[x] || 0) + 1);
+            
+            for(let ic in countMap) {
+                if(countMap[ic] >= 3) {
+                    tray = tray.filter(v => v !== ic);
+                    matches++;
+                    document.getElementById('target').innerText = Math.max(0, target - matches);
+                    setTimeout(updateTray, 200);
+                    
+                    if(matches >= target) {
+                        showPopup(true);
+                    }
+                    return;
+                }
+            }
+            if(tray.length >= 7) showPopup(false);
+        }
+
+        function useHint() {
+            if(hints <= 0) return;
+            const gridItems = document.querySelectorAll('.item');
+            const targetIc = tray.length > 0 ? tray[0] : icons[0];
+            for(let itm of gridItems) {
+                if(itm.innerText === targetIc) {
+                    itm.style.background = "#f59e0b";
+                    setTimeout(() => { itm.style.background = "#1e293b"; itm.click(); }, 400);
+                    hints--;
+                    document.getElementById('hc').innerText = hints;
+                    break;
+                }
+            }
+        }
+
+        function showPopup(win) {
+            const over = document.getElementById('popup-overlay');
+            const title = document.getElementById('pop-title');
+            const msg = document.getElementById('pop-msg');
+            const btn = document.getElementById('pop-btn');
+            over.style.display = 'flex';
+            
+            if(win) {
+                title.innerText = "LEVEL CLEAR! 🎉";
+                title.style.color = "#22c55e";
+                msg.innerText = "Next Level";
+                btn.innerText = "NEXT LEVEL";
+                btn.onclick = () => { level++; init(); };
+            } else {
+                title.innerText = "GAME OVER 😵";
+                title.style.color = "#ef4444";
+                msg.innerText = "Overflow";
+                btn.innerText = "TRY AGAIN";
+                btn.onclick = () => { level = 1; init(); };
+            }
+        }
+
+        // စစချင်း ပေါ်လာအောင်
+        init();
+    </script>
+</body>
+</html>
